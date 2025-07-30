@@ -21,9 +21,16 @@ import {
   Avatar,
   Divider,
   LinearProgress,
+  CircularProgress,
+  Alert,
 } from "@mui/material"
 import { EmojiEvents, School, TrendingUp, Assignment, CalendarToday } from "@mui/icons-material"
 import Image from "next/image"
+import {
+  top10EscolasMaisPontos,
+  bottom5EscolasMenosPontos,
+  listarTotaisPorEscolaPaginado,
+} from "@/service/service_dados"
 
 // Componente para o relógio em tempo real
 function LiveClock() {
@@ -35,6 +42,7 @@ function LiveClock() {
     const timer = setInterval(() => {
       setTime(dayjs())
     }, 1000)
+
     return () => clearInterval(timer)
   }, [])
 
@@ -115,77 +123,147 @@ function LiveClock() {
   )
 }
 
-// Dados mockados para demonstração
-const topSchools = [
-  { name: "Escola Municipal João Silva", points: 2850, collections: 45, trend: "+12%" },
-  { name: "CMEI Maria Eduarda", points: 2720, collections: 42, trend: "+8%" },
-  { name: "Escola Estadual Santos Dumont", points: 2650, collections: 38, trend: "+15%" },
-  { name: "Colégio Municipal Verde Vida", points: 2580, collections: 41, trend: "+5%" },
-  { name: "Escola Municipal Natureza", points: 2450, collections: 35, trend: "+18%" },
-  { name: "CMEI Pequenos Ecologistas", points: 2380, collections: 33, trend: "+7%" },
-  { name: "Escola Municipal Reciclar", points: 2320, collections: 31, trend: "+10%" },
-  { name: "Colégio Estadual Meio Ambiente", points: 2280, collections: 29, trend: "+6%" },
-  { name: "Escola Municipal Sustentável", points: 2150, collections: 28, trend: "+9%" },
-  { name: "CMEI Futuro Verde", points: 2080, collections: 26, trend: "+4%" },
-]
-
-const bottomSchools = [
-  { name: "Escola Municipal Início Verde", points: 450, collections: 8, trend: "-2%" },
-  { name: "CMEI Aprendendo Reciclar", points: 520, collections: 9, trend: "+1%" },
-  { name: "Escola Estadual Nova Chance", points: 680, collections: 12, trend: "+3%" },
-  { name: "Colégio Municipal Crescer", points: 750, collections: 14, trend: "+5%" },
-  { name: "Escola Municipal Esperança", points: 820, collections: 15, trend: "+2%" },
-]
-
-const recentRegistrations = [
-  {
-    id: 1,
-    school: "Escola Municipal João Silva",
-    date: "28/01/2025",
-    time: "14:30",
-    collector: "Carlos Santos",
-    materials: ["Plástico", "Papel"],
-    volume: "Bag Cheio",
-  },
-  {
-    id: 2,
-    school: "CMEI Maria Eduarda",
-    date: "28/01/2025",
-    time: "13:45",
-    collector: "Ana Costa",
-    materials: ["Alumínio", "Eletrônico"],
-    volume: "Bag Semi Cheio",
-  },
-  {
-    id: 3,
-    school: "Escola Estadual Santos Dumont",
-    date: "28/01/2025",
-    time: "12:20",
-    collector: "Pedro Lima",
-    materials: ["Plástico", "Papel", "Alumínio"],
-    volume: "Bag Cheio",
-  },
-  {
-    id: 4,
-    school: "Colégio Municipal Verde Vida",
-    date: "28/01/2025",
-    time: "11:15",
-    collector: "Maria Silva",
-    materials: ["Papel"],
-    volume: "Bag Semi Cheio",
-  },
-  {
-    id: 5,
-    school: "Escola Municipal Natureza",
-    date: "28/01/2025",
-    time: "10:30",
-    collector: "João Oliveira",
-    materials: ["Plástico", "Eletrônico"],
-    volume: "Bag Cheio",
-  },
-]
-
 export default function SchoolProgress() {
+  // Estados para os dados da API
+  const [topSchools, setTopSchools] = useState([])
+  const [bottomSchools, setBottomSchools] = useState([])
+  const [recentRegistrations, setRecentRegistrations] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // Carregar dados da API
+  useEffect(() => {
+    const loadData = async () => {
+      console.log("🚀 [PAGE] Iniciando carregamento de dados...")
+
+      try {
+        setLoading(true)
+        setError(null)
+
+        console.log("📡 [PAGE] Fazendo chamadas para todas as APIs em paralelo...")
+
+        // Testar cada API individualmente primeiro
+        console.log("🧪 [PAGE] Testando listarTotaisPorEscolaPaginado...")
+        const listResult = await listarTotaisPorEscolaPaginado(1, 10)
+        console.log("🧪 [PAGE] Resultado de listarTotaisPorEscolaPaginado:", listResult)
+        console.log("🧪 [PAGE] Tipo do resultado:", typeof listResult)
+        console.log("🧪 [PAGE] Propriedades do resultado:", Object.keys(listResult))
+
+        console.log("🧪 [PAGE] Testando top10EscolasMaisPontos...")
+        const topResult = await top10EscolasMaisPontos()
+        console.log("🧪 [PAGE] Resultado de top10EscolasMaisPontos:", topResult)
+
+        console.log("🧪 [PAGE] Testando bottom5EscolasMenosPontos...")
+        const bottomResult = await bottom5EscolasMenosPontos()
+        console.log("🧪 [PAGE] Resultado de bottom5EscolasMenosPontos:", bottomResult)
+
+        console.log("✅ [PAGE] Todos os resultados recebidos:")
+        console.log("🏆 [PAGE] Top 10 Result:", topResult)
+        console.log("📈 [PAGE] Bottom 5 Result:", bottomResult)
+        console.log("📋 [PAGE] Lista Result:", listResult)
+
+        // Verificar erros individualmente
+        if (topResult.erro) {
+          console.error("❌ [PAGE] Erro no Top 10:", topResult.erro)
+          throw new Error(`Top 10: ${topResult.erro}`)
+        }
+        if (bottomResult.erro) {
+          console.error("❌ [PAGE] Erro no Bottom 5:", bottomResult.erro)
+          throw new Error(`Bottom 5: ${bottomResult.erro}`)
+        }
+        if (listResult.erro) {
+          console.error("❌ [PAGE] Erro na Lista:", listResult.erro)
+          throw new Error(`Lista completa: ${listResult.erro}`)
+        }
+
+        console.log("🔄 [PAGE] Iniciando mapeamento dos dados para a UI...")
+
+        // Mapear dados do top 10 para o formato esperado pela UI
+        const mappedTopSchools = topResult.resultados.map((escola, index) => {
+          const mapped = {
+            name: escola.escolaNome,
+            points: escola.pontos,
+            collections: Math.floor(escola.pontos / 50), // Estimativa baseada nos pontos
+            trend: `+${Math.floor(Math.random() * 20 + 1)}%`, // Trend simulado
+          }
+          console.log(`🏆 [PAGE] Top escola ${index + 1} mapeada:`, mapped)
+          return mapped
+        })
+
+        // Mapear dados do bottom 5 para o formato esperado pela UI
+        const mappedBottomSchools = bottomResult.resultados.map((escola, index) => {
+          const mapped = {
+            name: escola.escolaNome,
+            points: escola.pontos,
+            collections: Math.floor(escola.pontos / 50), // Estimativa baseada nos pontos
+            trend: `+${Math.floor(Math.random() * 10 + 1)}%`, // Trend simulado
+          }
+          console.log(`📈 [PAGE] Bottom escola ${index + 1} mapeada:`, mapped)
+          return mapped
+        })
+
+        // Mapear dados da lista completa para registros recentes
+        const mappedRecentRegistrations = listResult.resultados.map((escola, index) => {
+          console.log(`📋 [PAGE] Processando escola ${index + 1} para registros:`, escola)
+
+          const materiais = []
+          if (escola.totalPlastico > 0) materiais.push("Plástico")
+          if (escola.totalPapel > 0) materiais.push("Papel")
+          if (escola.totalAluminio > 0) materiais.push("Alumínio")
+          if (escola.totalEletronico > 0) materiais.push("Eletrônico")
+
+          // Determinar volume baseado nos totais
+          let volume = "Bag Vazio"
+          if (escola.totalCheio > 0) volume = "Bag Cheio"
+          else if (escola.totalSemiCheio > 0) volume = "Bag Semi Cheio"
+
+          // Formatar data se disponível
+          let dataFormatada = "28/01/2025"
+          let horaFormatada = `${10 + index}:${30 + ((index * 15) % 60)}`
+
+          if (escola.dataMaisRecente) {
+            const data = new Date(escola.dataMaisRecente)
+            dataFormatada = data.toLocaleDateString("pt-BR")
+            horaFormatada = data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+          }
+
+          const mapped = {
+            id: index + 1,
+            school: escola.nomeEscola,
+            date: dataFormatada,
+            time: horaFormatada,
+            collector: `Coletor ${index + 1}`, // Simulado pois não vem da API
+            materials: materiais.length > 0 ? materiais : ["Sem materiais"],
+            volume: volume,
+          }
+
+          console.log(`📋 [PAGE] Registro ${index + 1} mapeado:`, mapped)
+          return mapped
+        })
+
+        console.log("✅ [PAGE] Todos os dados mapeados com sucesso!")
+        console.log("🏆 [PAGE] Top Schools Final:", mappedTopSchools)
+        console.log("📈 [PAGE] Bottom Schools Final:", mappedBottomSchools)
+        console.log("📋 [PAGE] Recent Registrations Final:", mappedRecentRegistrations)
+
+        setTopSchools(mappedTopSchools)
+        setBottomSchools(mappedBottomSchools)
+        setRecentRegistrations(mappedRecentRegistrations)
+
+        console.log("🎉 [PAGE] Estados atualizados com sucesso!")
+      } catch (err) {
+        console.error("💥 [PAGE] Erro durante o carregamento:", err)
+        console.error("💥 [PAGE] Stack trace:", err.stack)
+        setError(err.message)
+      } finally {
+        console.log("🏁 [PAGE] Finalizando carregamento...")
+        setLoading(false)
+      }
+    }
+
+    loadData()
+  }, [])
+
   const getPositionColor = (position) => {
     if (position === 1) return "#FFD700" // Ouro
     if (position === 2) return "#C0C0C0" // Prata
@@ -204,6 +282,51 @@ export default function SchoolProgress() {
       default:
         return "#9E9E9E"
     }
+  }
+
+  // Componente de loading
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          position: "relative",
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <CircularProgress size={60} sx={{ color: "#4CAF50", mb: 2 }} />
+        <Typography variant="h6" sx={{ color: "#2C3E50" }}>
+          Carregando dados das escolas...
+        </Typography>
+      </Box>
+    )
+  }
+
+  // Componente de erro
+  if (error) {
+    return (
+      <Box
+        sx={{
+          position: "relative",
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          p: 4,
+        }}
+      >
+        <Alert severity="error" sx={{ mb: 2, maxWidth: 600 }}>
+          <Typography variant="h6" gutterBottom>
+            Erro ao carregar dados
+          </Typography>
+          <Typography variant="body2">{error}</Typography>
+        </Alert>
+      </Box>
+    )
   }
 
   return (
@@ -325,7 +448,6 @@ export default function SchoolProgress() {
               TOP 10 ESCOLAS - MAIORES PONTUAÇÕES
             </Typography>
           </Box>
-
           <Grid container spacing={3} sx={{ justifyContent: "center" }}>
             {topSchools.map((school, index) => (
               <Grid item xs={12} sm={6} md={4} lg={3} xl={2.4} key={index}>
@@ -389,7 +511,6 @@ export default function SchoolProgress() {
                         {school.name}
                       </Typography>
                     </Box>
-
                     <Box>
                       <Typography
                         variant="h4"
@@ -403,7 +524,7 @@ export default function SchoolProgress() {
                         {school.points.toLocaleString()}
                       </Typography>
                       <Typography variant="body2" sx={{ color: "#666", display: "block", mb: 2 }}>
-                        {school.collections} coletas realizadas
+                        pontos
                       </Typography>
                       <Chip
                         label={school.trend}
@@ -450,7 +571,6 @@ export default function SchoolProgress() {
               TOP 5 ESCOLAS - OPORTUNIDADES DE CRESCIMENTO
             </Typography>
           </Box>
-
           <Grid container spacing={3} sx={{ justifyContent: "center" }}>
             {bottomSchools.map((school, index) => (
               <Grid item xs={12} sm={6} md={4} lg={3} xl={2.4} key={index}>
@@ -498,7 +618,6 @@ export default function SchoolProgress() {
                         {school.name}
                       </Typography>
                     </Box>
-
                     <Box>
                       <Typography
                         variant="h4"
@@ -512,9 +631,8 @@ export default function SchoolProgress() {
                         {school.points.toLocaleString()}
                       </Typography>
                       <Typography variant="body2" sx={{ color: "#666", display: "block", mb: 2 }}>
-                        {school.collections} coletas realizadas
+                        pontos
                       </Typography>
-
                       <Box sx={{ mb: 2 }}>
                         <Typography variant="caption" sx={{ color: "#666", mb: 1, display: "block" }}>
                           Progresso para próximo nível
@@ -533,7 +651,6 @@ export default function SchoolProgress() {
                           }}
                         />
                       </Box>
-
                       <Chip
                         label={school.trend}
                         size="medium"
@@ -578,7 +695,6 @@ export default function SchoolProgress() {
               NOVOS CADASTROS DE FORMULÁRIOS
             </Typography>
           </Box>
-
           <TableContainer
             sx={{
               borderRadius: 2,
@@ -607,17 +723,7 @@ export default function SchoolProgress() {
                       fontSize: "1rem",
                     }}
                   >
-                    Data/Hora
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      bgcolor: "#4CAF50",
-                      color: "white",
-                      fontWeight: "bold",
-                      fontSize: "1rem",
-                    }}
-                  >
-                    Coletor
+                    Data
                   </TableCell>
                   <TableCell
                     sx={{
@@ -660,17 +766,11 @@ export default function SchoolProgress() {
                     <TableCell>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                         <CalendarToday sx={{ color: "#666", fontSize: 16 }} />
-                        <Box>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {registration.date}
-                          </Typography>
-                          <Typography variant="caption" sx={{ color: "#666" }}>
-                            {registration.time}
-                          </Typography>
-                        </Box>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {registration.date}
+                        </Typography>
                       </Box>
                     </TableCell>
-                    <TableCell sx={{ color: "#2C3E50" }}>{registration.collector}</TableCell>
                     <TableCell>
                       <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
                         {registration.materials.map((material, index) => (

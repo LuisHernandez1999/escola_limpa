@@ -19,12 +19,18 @@ import {
   FormControl,
   FormLabel,
   Divider,
+  Dialog,
+  DialogContent,
+  DialogActions,
+  IconButton,
 } from "@mui/material"
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import { DatePicker } from "@mui/x-date-pickers/DatePicker"
 import { TimePicker } from "@mui/x-date-pickers/TimePicker"
 import Image from "next/image"
+import { criarEscola, criarColeta } from "@/service/formulario_escola"
+import { CheckCircle, Error, Warning, Close } from "@mui/icons-material"
 
 // Componente para o relógio em tempo real
 function LiveClock() {
@@ -143,6 +149,15 @@ export default function ColetaForm() {
     responsibleCpf: "",
   })
 
+  // Estados para feedback
+  const [loading, setLoading] = useState(false)
+  const [schoolLoading, setSchoolLoading] = useState(false)
+  const [modal, setModal] = useState({
+    open: false,
+    message: "",
+    type: "success", // success, error, warning
+  })
+
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
@@ -171,20 +186,113 @@ export default function ColetaForm() {
     setFormData((prev) => ({ ...prev, volumeEvaluation: e.target.value }))
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    console.log("Form Data Submitted:", formData)
-    // Aqui você normalmente enviaria os dados para um backend
-    alert("Formulário enviado! Verifique o console para os dados.")
+  const showModal = (message, type = "success") => {
+    setModal({
+      open: true,
+      message,
+      type,
+    })
   }
 
-  const handleSaveSchool = () => {
-    if (schoolName.trim()) {
-      console.log("Escola cadastrada:", schoolName)
-      alert(`Escola "${schoolName}" cadastrada com sucesso!`)
-      setSchoolName("")
-    } else {
-      alert("Por favor, digite o nome da escola.")
+  const handleCloseModal = () => {
+    setModal((prev) => ({ ...prev, open: false }))
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+
+    try {
+      // Preparar dados para a API seguindo exatamente o mapeamento
+      const coletaData = {
+        prefixo_caminhao: formData.truckPrefix,
+        data: formData.collectionDate ? formData.collectionDate.format("YYYY-MM-DD") : "",
+        bairro: formData.neighborhood,
+        motorista_nome: formData.driverName,
+        motorista_matricula: formData.driverId,
+        coletor_nome: formData.collectorName,
+        coletor_matricula: formData.collectorId,
+        escola: formData.school,
+        horario_chegada: formData.arrivalTime ? formData.arrivalTime.format("HH:mm") : "",
+        horario_saida: formData.departureTime ? formData.departureTime.format("HH:mm") : "",
+        bag_plastico: formData.materials.plasticBag ? 1 : 0,
+        bag_papel: formData.materials.paperBag ? 1 : 0,
+        bag_aluminio: formData.materials.aluminumBag ? 1 : 0,
+        bag_eletronico: formData.materials.electronicBag ? 1 : 0,
+        bag_vazio: formData.volumeEvaluation === "empty" ? 1 : 0,
+        bag_semi_cheio: formData.volumeEvaluation === "semi-full" ? 1 : 0,
+        bag_cheio: formData.volumeEvaluation === "full" ? 1 : 0,
+        assinatura_responsavel: formData.responsibleName,
+        telefone_responsavel: formData.responsiblePhone,
+        cpf_responsavel: formData.responsibleCpf,
+      }
+
+      console.log("Dados enviados para API:", coletaData)
+
+      const resultado = await criarColeta(coletaData)
+
+      if (resultado.sucesso) {
+        showModal("Coleta cadastrada com sucesso!", "success")
+        // Limpar formulário após sucesso
+        setFormData({
+          truckPrefix: "",
+          collectionDate: null,
+          neighborhood: "",
+          driverName: "",
+          driverId: "",
+          collectorName: "",
+          collectorId: "",
+          school: "",
+          arrivalTime: null,
+          departureTime: null,
+          materials: {
+            plasticBag: false,
+            paperBag: false,
+            aluminumBag: false,
+            electronicBag: false,
+          },
+          volumeEvaluation: "",
+          responsibleName: "",
+          responsiblePhone: "",
+          responsibleCpf: "",
+        })
+      } else {
+        console.error("Erro da API:", resultado.erro)
+        const errorMessage = typeof resultado.erro === "string" ? resultado.erro : JSON.stringify(resultado.erro)
+        showModal(`Erro ao cadastrar coleta: ${errorMessage}`, "error")
+      }
+    } catch (error) {
+      console.error("Erro inesperado:", error)
+      showModal("Erro inesperado ao enviar formulário", "error")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSaveSchool = async () => {
+    if (!schoolName.trim()) {
+      showModal("Por favor, digite o nome da escola.", "warning")
+      return
+    }
+
+    setSchoolLoading(true)
+
+    try {
+      const resultado = await criarEscola({ nome_escola: schoolName.trim() })
+
+      if (resultado.sucesso) {
+        showModal(`Escola "${schoolName}" cadastrada com sucesso!`, "success")
+        setSchoolName("")
+      } else {
+        console.error("Erro da API:", resultado.erro)
+        const errorMessage = typeof resultado.erro === "string" ? resultado.erro : JSON.stringify(resultado.erro)
+        showModal(`Erro ao cadastrar escola: ${errorMessage}`, "error")
+      }
+    } catch (error) {
+      console.error("Erro inesperado:", error)
+      showModal("Erro inesperado ao cadastrar escola", "error")
+    } finally {
+      setSchoolLoading(false)
     }
   }
 
@@ -325,6 +433,7 @@ export default function ColetaForm() {
                 onChange={(e) => setSchoolName(e.target.value)}
                 variant="outlined"
                 size="medium"
+                disabled={schoolLoading}
                 sx={{
                   flex: 1,
                   minWidth: "300px",
@@ -334,6 +443,7 @@ export default function ColetaForm() {
               <Button
                 variant="outlined"
                 onClick={handleSaveSchool}
+                disabled={schoolLoading}
                 sx={{
                   borderColor: "#4CAF50",
                   color: "#4CAF50",
@@ -343,6 +453,10 @@ export default function ColetaForm() {
                     backgroundColor: "rgba(76, 175, 80, 0.04)",
                     transform: "translateY(-1px)",
                   },
+                  "&:disabled": {
+                    borderColor: "#ccc",
+                    color: "#ccc",
+                  },
                   py: 1.5,
                   px: 4,
                   fontSize: "1rem",
@@ -351,7 +465,7 @@ export default function ColetaForm() {
                   minWidth: "120px",
                 }}
               >
-                Salvar
+                {schoolLoading ? "Salvando..." : "Salvar"}
               </Button>
             </Box>
           </Paper>
@@ -396,6 +510,7 @@ export default function ColetaForm() {
                     onChange={handleInputChange}
                     variant="outlined"
                     size="medium"
+                    disabled={loading}
                     sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
                   />
                 </Grid>
@@ -405,6 +520,7 @@ export default function ColetaForm() {
                     value={formData.collectionDate}
                     onChange={handleDateChange}
                     format="DD/MM/YYYY"
+                    disabled={loading}
                     slotProps={{
                       textField: {
                         fullWidth: true,
@@ -414,6 +530,7 @@ export default function ColetaForm() {
                     }}
                   />
                 </Grid>
+
                 {/* Row 2 */}
                 <Grid item xs={12} sm={6}>
                   <TextField
@@ -424,6 +541,7 @@ export default function ColetaForm() {
                     onChange={handleInputChange}
                     variant="outlined"
                     size="medium"
+                    disabled={loading}
                     sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
                   />
                 </Grid>
@@ -436,6 +554,7 @@ export default function ColetaForm() {
                     onChange={handleInputChange}
                     variant="outlined"
                     size="medium"
+                    disabled={loading}
                     sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
                   />
                 </Grid>
@@ -467,6 +586,7 @@ export default function ColetaForm() {
                     onChange={handleInputChange}
                     variant="outlined"
                     size="medium"
+                    disabled={loading}
                     sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
                   />
                 </Grid>
@@ -479,6 +599,7 @@ export default function ColetaForm() {
                     onChange={handleInputChange}
                     variant="outlined"
                     size="medium"
+                    disabled={loading}
                     sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
                   />
                 </Grid>
@@ -510,6 +631,7 @@ export default function ColetaForm() {
                     onChange={handleInputChange}
                     variant="outlined"
                     size="medium"
+                    disabled={loading}
                     sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
                   />
                 </Grid>
@@ -522,6 +644,7 @@ export default function ColetaForm() {
                     onChange={handleInputChange}
                     variant="outlined"
                     size="medium"
+                    disabled={loading}
                     sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
                   />
                 </Grid>
@@ -550,6 +673,7 @@ export default function ColetaForm() {
                     value={formData.arrivalTime}
                     onChange={(time) => handleTimeChange(time, "arrivalTime")}
                     format="HH:mm"
+                    disabled={loading}
                     slotProps={{
                       textField: {
                         fullWidth: true,
@@ -565,6 +689,7 @@ export default function ColetaForm() {
                     value={formData.departureTime}
                     onChange={(time) => handleTimeChange(time, "departureTime")}
                     format="HH:mm"
+                    disabled={loading}
                     slotProps={{
                       textField: {
                         fullWidth: true,
@@ -598,6 +723,7 @@ export default function ColetaForm() {
                             checked={formData.materials.plasticBag}
                             onChange={handleMaterialChange}
                             name="plasticBag"
+                            disabled={loading}
                             sx={{ color: "#4CAF50", "&.Mui-checked": { color: "#4CAF50" } }}
                           />
                         }
@@ -613,6 +739,7 @@ export default function ColetaForm() {
                             checked={formData.materials.paperBag}
                             onChange={handleMaterialChange}
                             name="paperBag"
+                            disabled={loading}
                             sx={{ color: "#4CAF50", "&.Mui-checked": { color: "#4CAF50" } }}
                           />
                         }
@@ -628,6 +755,7 @@ export default function ColetaForm() {
                             checked={formData.materials.aluminumBag}
                             onChange={handleMaterialChange}
                             name="aluminumBag"
+                            disabled={loading}
                             sx={{ color: "#4CAF50", "&.Mui-checked": { color: "#4CAF50" } }}
                           />
                         }
@@ -643,6 +771,7 @@ export default function ColetaForm() {
                             checked={formData.materials.electronicBag}
                             onChange={handleMaterialChange}
                             name="electronicBag"
+                            disabled={loading}
                             sx={{ color: "#4CAF50", "&.Mui-checked": { color: "#4CAF50" } }}
                           />
                         }
@@ -681,7 +810,9 @@ export default function ColetaForm() {
                     >
                       <FormControlLabel
                         value="empty"
-                        control={<Radio sx={{ color: "#4CAF50", "&.Mui-checked": { color: "#4CAF50" } }} />}
+                        control={
+                          <Radio disabled={loading} sx={{ color: "#4CAF50", "&.Mui-checked": { color: "#4CAF50" } }} />
+                        }
                         label={
                           <Typography variant="body1" sx={{ fontSize: { xs: "0.9rem", sm: "1rem" }, color: "#444" }}>
                             Bag Vazio
@@ -690,7 +821,9 @@ export default function ColetaForm() {
                       />
                       <FormControlLabel
                         value="semi-full"
-                        control={<Radio sx={{ color: "#4CAF50", "&.Mui-checked": { color: "#4CAF50" } }} />}
+                        control={
+                          <Radio disabled={loading} sx={{ color: "#4CAF50", "&.Mui-checked": { color: "#4CAF50" } }} />
+                        }
                         label={
                           <Typography variant="body1" sx={{ fontSize: { xs: "0.9rem", sm: "1rem" }, color: "#444" }}>
                             Bag Semi Cheio
@@ -699,7 +832,9 @@ export default function ColetaForm() {
                       />
                       <FormControlLabel
                         value="full"
-                        control={<Radio sx={{ color: "#4CAF50", "&.Mui-checked": { color: "#4CAF50" } }} />}
+                        control={
+                          <Radio disabled={loading} sx={{ color: "#4CAF50", "&.Mui-checked": { color: "#4CAF50" } }} />
+                        }
                         label={
                           <Typography variant="body1" sx={{ fontSize: { xs: "0.9rem", sm: "1rem" }, color: "#444" }}>
                             Bag Cheio
@@ -737,6 +872,7 @@ export default function ColetaForm() {
                     onChange={handleInputChange}
                     variant="outlined"
                     size="medium"
+                    disabled={loading}
                     sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
                   />
                 </Grid>
@@ -750,6 +886,7 @@ export default function ColetaForm() {
                     variant="outlined"
                     size="medium"
                     placeholder="(XX) XXXXX-XXXX"
+                    disabled={loading}
                     sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
                   />
                 </Grid>
@@ -763,6 +900,7 @@ export default function ColetaForm() {
                     variant="outlined"
                     size="medium"
                     placeholder="XXX.XXX.XXX-XX"
+                    disabled={loading}
                     sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1.5 } }}
                   />
                 </Grid>
@@ -771,6 +909,7 @@ export default function ColetaForm() {
                   <Button
                     type="submit"
                     variant="outlined"
+                    disabled={loading}
                     sx={{
                       borderColor: "#4CAF50",
                       color: "#4CAF50",
@@ -780,6 +919,10 @@ export default function ColetaForm() {
                         backgroundColor: "rgba(76, 175, 80, 0.04)",
                         transform: "translateY(-1px)",
                       },
+                      "&:disabled": {
+                        borderColor: "#ccc",
+                        color: "#ccc",
+                      },
                       py: 1.5,
                       px: 5,
                       fontSize: "1.1rem",
@@ -788,7 +931,7 @@ export default function ColetaForm() {
                       ml: "auto",
                     }}
                   >
-                    Enviar Formulário
+                    {loading ? "Enviando..." : "Enviar Formulário"}
                   </Button>
                 </Grid>
               </Grid>
@@ -823,7 +966,6 @@ export default function ColetaForm() {
             >
               Parceria Limpa Gyn e Prefeitura de Goiânia
             </Typography>
-
             <Box sx={{ display: "flex", alignItems: "center", gap: 2, justifyContent: "center" }}>
               <Image
                 src="/logolimpa.png"
@@ -840,7 +982,6 @@ export default function ColetaForm() {
                 style={{ objectFit: "contain" }}
               />
             </Box>
-
             <Divider sx={{ width: "15%", bgcolor: "rgba(150,150,150,0.5)", height: "2px", my: 0.5 }} />
             <Typography
               variant="body2"
@@ -851,6 +992,141 @@ export default function ColetaForm() {
             </Typography>
           </Toolbar>
         </AppBar>
+
+        {/* Modal para feedback */}
+        <Dialog
+          open={modal.open}
+          onClose={handleCloseModal}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 3,
+              boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
+              overflow: "visible",
+            },
+          }}
+        >
+          <DialogContent
+            sx={{
+              textAlign: "center",
+              py: 4,
+              px: 3,
+              position: "relative",
+            }}
+          >
+            <IconButton
+              onClick={handleCloseModal}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+                color: "#999",
+                "&:hover": {
+                  backgroundColor: "rgba(0,0,0,0.04)",
+                },
+              }}
+            >
+              <Close />
+            </IconButton>
+
+            <Box sx={{ mb: 2 }}>
+              {modal.type === "success" && (
+                <CheckCircle
+                  sx={{
+                    fontSize: 64,
+                    color: "#4CAF50",
+                    mb: 2,
+                    filter: "drop-shadow(0 4px 8px rgba(76, 175, 80, 0.3))",
+                  }}
+                />
+              )}
+              {modal.type === "error" && (
+                <Error
+                  sx={{
+                    fontSize: 64,
+                    color: "#f44336",
+                    mb: 2,
+                    filter: "drop-shadow(0 4px 8px rgba(244, 67, 54, 0.3))",
+                  }}
+                />
+              )}
+              {modal.type === "warning" && (
+                <Warning
+                  sx={{
+                    fontSize: 64,
+                    color: "#ff9800",
+                    mb: 2,
+                    filter: "drop-shadow(0 4px 8px rgba(255, 152, 0, 0.3))",
+                  }}
+                />
+              )}
+            </Box>
+
+            <Typography
+              variant="h6"
+              sx={{
+                color: "#333",
+                fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                fontWeight: 500,
+                mb: 1,
+                lineHeight: 1.4,
+              }}
+            >
+              {modal.type === "success" && "Sucesso!"}
+              {modal.type === "error" && "Erro"}
+              {modal.type === "warning" && "Atenção"}
+            </Typography>
+
+            <Typography
+              variant="body1"
+              sx={{
+                color: "#666",
+                fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                lineHeight: 1.5,
+                maxWidth: "400px",
+                margin: "0 auto",
+              }}
+            >
+              {modal.message}
+            </Typography>
+          </DialogContent>
+
+          <DialogActions
+            sx={{
+              justifyContent: "center",
+              pb: 3,
+              px: 3,
+            }}
+          >
+            <Button
+              onClick={handleCloseModal}
+              variant="contained"
+              sx={{
+                backgroundColor: modal.type === "success" ? "#4CAF50" : modal.type === "error" ? "#f44336" : "#ff9800",
+                color: "white",
+                "&:hover": {
+                  backgroundColor:
+                    modal.type === "success" ? "#388E3C" : modal.type === "error" ? "#d32f2f" : "#f57c00",
+                },
+                borderRadius: 2,
+                px: 4,
+                py: 1,
+                fontSize: "1rem",
+                fontWeight: 500,
+                textTransform: "none",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                "&:hover": {
+                  boxShadow: "0 6px 16px rgba(0,0,0,0.2)",
+                  transform: "translateY(-1px)",
+                },
+                transition: "all 0.3s ease-in-out",
+              }}
+            >
+              OK
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </LocalizationProvider>
   )
