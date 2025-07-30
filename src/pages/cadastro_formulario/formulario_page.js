@@ -1,5 +1,4 @@
 "use client"
-
 import { useState, useEffect } from "react"
 import dayjs from "dayjs"
 import {
@@ -22,6 +21,7 @@ import {
   Dialog,
   DialogContent,
   DialogActions,
+  DialogTitle,
   IconButton,
 } from "@mui/material"
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider"
@@ -30,7 +30,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker"
 import { TimePicker } from "@mui/x-date-pickers/TimePicker"
 import Image from "next/image"
 import { criarEscola, criarColeta } from "@/service/formulario_escola"
-import { CheckCircle, Error, Warning, Close } from "@mui/icons-material"
+import { CheckCircle, Error, Warning, Close, School, Info } from "@mui/icons-material"
 
 // Componente para o relógio em tempo real
 function LiveClock() {
@@ -158,6 +158,18 @@ export default function ColetaForm() {
     type: "success", // success, error, warning
   })
 
+  // Estado para modal de confirmação da escola
+  const [confirmationModal, setConfirmationModal] = useState({
+    open: false,
+    schoolData: null,
+  })
+
+  // Estado para modal de confirmação do formulário de coleta
+  const [collectionConfirmationModal, setCollectionConfirmationModal] = useState({
+    open: false,
+    collectionData: null,
+  })
+
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
@@ -200,7 +212,105 @@ export default function ColetaForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    // Validação básica
+    if (!formData.truckPrefix || !formData.collectionDate || !formData.school) {
+      showModal("Por favor, preencha os campos obrigatórios: Prefixo do Caminhão, Data da Coleta e Escola.", "warning")
+      return
+    }
+
+    // Preparar dados para confirmação
+    const collectionData = {
+      prefixo_caminhao: formData.truckPrefix,
+      data: formData.collectionDate ? formData.collectionDate.format("DD/MM/YYYY") : "",
+      bairro: formData.neighborhood,
+      motorista_nome: formData.driverName,
+      motorista_matricula: formData.driverId,
+      coletor_nome: formData.collectorName,
+      coletor_matricula: formData.collectorId,
+      escola: formData.school,
+      horario_chegada: formData.arrivalTime ? formData.arrivalTime.format("HH:mm") : "",
+      horario_saida: formData.departureTime ? formData.departureTime.format("HH:mm") : "",
+      materiais_coletados: [
+        formData.materials.plasticBag && "Bag de Plástico",
+        formData.materials.paperBag && "Bag de Papel",
+        formData.materials.aluminumBag && "Bag de Alumínio",
+        formData.materials.electronicBag && "Bag de Eletrônico",
+      ].filter(Boolean),
+      volume_avaliacao:
+        formData.volumeEvaluation === "empty"
+          ? "Bag Vazio"
+          : formData.volumeEvaluation === "semi-full"
+            ? "Bag Semi Cheio"
+            : formData.volumeEvaluation === "full"
+              ? "Bag Cheio"
+              : "",
+      assinatura_responsavel: formData.responsibleName,
+      telefone_responsavel: formData.responsiblePhone,
+      cpf_responsavel: formData.responsibleCpf,
+      data_cadastro: dayjs().format("DD/MM/YYYY"),
+      horario_cadastro: dayjs().format("HH:mm:ss"),
+    }
+
+    setCollectionConfirmationModal({
+      open: true,
+      collectionData,
+    })
+  }
+
+  // Função para abrir o modal de confirmação
+  const handleSaveSchool = () => {
+    if (!schoolName.trim()) {
+      showModal("Por favor, digite o nome da escola.", "warning")
+      return
+    }
+
+    // Preparar dados da escola para confirmação
+    const schoolData = {
+      nome_escola: schoolName.trim(),
+      data_cadastro: dayjs().format("DD/MM/YYYY"),
+      horario_cadastro: dayjs().format("HH:mm:ss"),
+    }
+
+    setConfirmationModal({
+      open: true,
+      schoolData,
+    })
+  }
+
+  // Função para confirmar o cadastro da escola
+  const handleConfirmSchoolRegistration = async () => {
+    setSchoolLoading(true)
+    setConfirmationModal({ open: false, schoolData: null })
+
+    try {
+      const resultado = await criarEscola({ nome_escola: schoolName.trim() })
+
+      if (resultado.sucesso) {
+        showModal(`Escola "${schoolName}" cadastrada com sucesso!`, "success")
+        setSchoolName("")
+      } else {
+        console.error("Erro da API:", resultado.erro)
+        const errorMessage = typeof resultado.erro === "string" ? resultado.erro : JSON.stringify(resultado.erro)
+        showModal(`Erro ao cadastrar escola: ${errorMessage}`, "error")
+      }
+    } catch (error) {
+      console.error("Erro inesperado:", error)
+      showModal("Erro inesperado ao cadastrar escola", "error")
+    } finally {
+      setSchoolLoading(false)
+    }
+  }
+
+  // Função para cancelar o cadastro da escola
+  const handleCancelSchoolRegistration = () => {
+    setConfirmationModal({ open: false, schoolData: null })
+  }
+
+  // Função para confirmar o envio do formulário de coleta
+  const handleConfirmCollectionSubmission = async () => {
     setLoading(true)
+    setCollectionConfirmationModal({ open: false, collectionData: null })
 
     try {
       // Preparar dados para a API seguindo exatamente o mapeamento
@@ -269,31 +379,9 @@ export default function ColetaForm() {
     }
   }
 
-  const handleSaveSchool = async () => {
-    if (!schoolName.trim()) {
-      showModal("Por favor, digite o nome da escola.", "warning")
-      return
-    }
-
-    setSchoolLoading(true)
-
-    try {
-      const resultado = await criarEscola({ nome_escola: schoolName.trim() })
-
-      if (resultado.sucesso) {
-        showModal(`Escola "${schoolName}" cadastrada com sucesso!`, "success")
-        setSchoolName("")
-      } else {
-        console.error("Erro da API:", resultado.erro)
-        const errorMessage = typeof resultado.erro === "string" ? resultado.erro : JSON.stringify(resultado.erro)
-        showModal(`Erro ao cadastrar escola: ${errorMessage}`, "error")
-      }
-    } catch (error) {
-      console.error("Erro inesperado:", error)
-      showModal("Erro inesperado ao cadastrar escola", "error")
-    } finally {
-      setSchoolLoading(false)
-    }
+  // Função para cancelar o envio do formulário de coleta
+  const handleCancelCollectionSubmission = () => {
+    setCollectionConfirmationModal({ open: false, collectionData: null })
   }
 
   return (
@@ -498,6 +586,7 @@ export default function ColetaForm() {
             >
               FORMULÁRIO DE COLETA
             </Typography>
+
             <form onSubmit={handleSubmit}>
               <Grid container spacing={2}>
                 {/* Row 1 */}
@@ -993,6 +1082,600 @@ export default function ColetaForm() {
           </Toolbar>
         </AppBar>
 
+        {/* Modal de Confirmação de Cadastro da Escola */}
+        <Dialog
+          open={confirmationModal.open}
+          onClose={handleCancelSchoolRegistration}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 3,
+              boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
+              overflow: "visible",
+            },
+          }}
+        >
+          <DialogTitle
+            sx={{
+              textAlign: "center",
+              py: 3,
+              px: 3,
+              position: "relative",
+              background: "linear-gradient(135deg, #4CAF50 0%, #388E3C 100%)",
+              color: "white",
+              borderRadius: "12px 12px 0 0",
+            }}
+          >
+            <IconButton
+              onClick={handleCancelSchoolRegistration}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+                color: "rgba(255,255,255,0.8)",
+                "&:hover": {
+                  backgroundColor: "rgba(255,255,255,0.1)",
+                  color: "white",
+                },
+              }}
+            >
+              <Close />
+            </IconButton>
+            <School
+              sx={{
+                fontSize: 48,
+                mb: 1,
+                filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.2))",
+              }}
+            />
+            <Typography
+              variant="h5"
+              sx={{
+                fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                fontWeight: 600,
+                letterSpacing: "0.02em",
+              }}
+            >
+              Confirmar Cadastro da Escola
+            </Typography>
+          </DialogTitle>
+
+          <DialogContent
+            sx={{
+              py: 4,
+              px: 4,
+            }}
+          >
+            <Box
+              sx={{
+                backgroundColor: "#F8F9FA",
+                borderRadius: 2,
+                p: 3,
+                mb: 3,
+                border: "1px solid #E9ECEF",
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  color: "#2C3E50",
+                  fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                  fontWeight: 600,
+                  mb: 2,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                <Info sx={{ color: "#4CAF50" }} />
+                Dados que serão cadastrados:
+              </Typography>
+
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    py: 1,
+                    borderBottom: "1px dashed #DEE2E6",
+                  }}
+                >
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontWeight: 500,
+                      color: "#495057",
+                      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                    }}
+                  >
+                    Nome da Escola:
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontWeight: 600,
+                      color: "#2C3E50",
+                      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                      maxWidth: "60%",
+                      textAlign: "right",
+                    }}
+                  >
+                    {confirmationModal.schoolData?.nome_escola}
+                  </Typography>
+                </Box>
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    py: 1,
+                    borderBottom: "1px dashed #DEE2E6",
+                  }}
+                >
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontWeight: 500,
+                      color: "#495057",
+                      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                    }}
+                  >
+                    Data do Cadastro:
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontWeight: 600,
+                      color: "#2C3E50",
+                      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                    }}
+                  >
+                    {confirmationModal.schoolData?.data_cadastro}
+                  </Typography>
+                </Box>
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    py: 1,
+                  }}
+                >
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontWeight: 500,
+                      color: "#495057",
+                      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                    }}
+                  >
+                    Horário do Cadastro:
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontWeight: 600,
+                      color: "#2C3E50",
+                      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                    }}
+                  >
+                    {confirmationModal.schoolData?.horario_cadastro}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+
+            <Typography
+              variant="body1"
+              sx={{
+                color: "#6C757D",
+                fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                textAlign: "center",
+                lineHeight: 1.6,
+                fontStyle: "italic",
+              }}
+            >
+              Deseja confirmar o cadastro desta escola no sistema?
+            </Typography>
+          </DialogContent>
+
+          <DialogActions
+            sx={{
+              justifyContent: "center",
+              pb: 3,
+              px: 4,
+              gap: 2,
+            }}
+          >
+            <Button
+              onClick={handleCancelSchoolRegistration}
+              variant="outlined"
+              sx={{
+                borderColor: "#6C757D",
+                color: "#6C757D",
+                "&:hover": {
+                  borderColor: "#495057",
+                  color: "#495057",
+                  backgroundColor: "rgba(108, 117, 125, 0.04)",
+                },
+                borderRadius: 2,
+                px: 4,
+                py: 1,
+                fontSize: "1rem",
+                fontWeight: 500,
+                textTransform: "none",
+                transition: "all 0.3s ease-in-out",
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleConfirmSchoolRegistration}
+              variant="contained"
+              disabled={schoolLoading}
+              sx={{
+                backgroundColor: "#4CAF50",
+                color: "white",
+                "&:hover": {
+                  backgroundColor: "#388E3C",
+                  boxShadow: "0 6px 16px rgba(76, 175, 80, 0.3)",
+                  transform: "translateY(-1px)",
+                },
+                "&:disabled": {
+                  backgroundColor: "#ccc",
+                  color: "#999",
+                },
+                borderRadius: 2,
+                px: 4,
+                py: 1,
+                fontSize: "1rem",
+                fontWeight: 600,
+                textTransform: "none",
+                boxShadow: "0 4px 12px rgba(76, 175, 80, 0.2)",
+                transition: "all 0.3s ease-in-out",
+              }}
+            >
+              {schoolLoading ? "Cadastrando..." : "Confirmar Cadastro"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Modal de Confirmação de Envio do Formulário de Coleta */}
+        <Dialog
+          open={collectionConfirmationModal.open}
+          onClose={handleCancelCollectionSubmission}
+          maxWidth="md"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 3,
+              boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
+              overflow: "visible",
+              maxHeight: "90vh",
+            },
+          }}
+        >
+          <DialogTitle
+            sx={{
+              textAlign: "center",
+              py: 3,
+              px: 3,
+              position: "relative",
+              background: "linear-gradient(135deg, #2196F3 0%, #1976D2 100%)",
+              color: "white",
+              borderRadius: "12px 12px 0 0",
+            }}
+          >
+            <IconButton
+              onClick={handleCancelCollectionSubmission}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+                color: "rgba(255,255,255,0.8)",
+                "&:hover": {
+                  backgroundColor: "rgba(255,255,255,0.1)",
+                  color: "white",
+                },
+              }}
+            >
+              <Close />
+            </IconButton>
+            <CheckCircle
+              sx={{
+                fontSize: 48,
+                mb: 1,
+                filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.2))",
+              }}
+            />
+            <Typography
+              variant="h5"
+              sx={{
+                fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                fontWeight: 600,
+                letterSpacing: "0.02em",
+              }}
+            >
+              Confirmar Envio do Formulário
+            </Typography>
+          </DialogTitle>
+
+          <DialogContent
+            sx={{
+              py: 4,
+              px: 4,
+              maxHeight: "60vh",
+              overflowY: "auto",
+            }}
+          >
+            <Box
+              sx={{
+                backgroundColor: "#F8F9FA",
+                borderRadius: 2,
+                p: 3,
+                mb: 3,
+                border: "1px solid #E9ECEF",
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  color: "#2C3E50",
+                  fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                  fontWeight: 600,
+                  mb: 3,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                <Info sx={{ color: "#2196F3" }} />
+                Dados que serão enviados:
+              </Typography>
+
+              <Grid container spacing={2}>
+                {/* Dados Básicos */}
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "#388E3C", mb: 1 }}>
+                    Dados Básicos da Coleta
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, color: "#495057" }}>
+                    Prefixo do Caminhão:
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#2C3E50" }}>
+                    {collectionConfirmationModal.collectionData?.prefixo_caminhao || "Não informado"}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, color: "#495057" }}>
+                    Data da Coleta:
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#2C3E50" }}>
+                    {collectionConfirmationModal.collectionData?.data || "Não informado"}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, color: "#495057" }}>
+                    Bairro:
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#2C3E50" }}>
+                    {collectionConfirmationModal.collectionData?.bairro || "Não informado"}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, color: "#495057" }}>
+                    Escola:
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#2C3E50" }}>
+                    {collectionConfirmationModal.collectionData?.escola || "Não informado"}
+                  </Typography>
+                </Grid>
+
+                {/* Dados do Motorista */}
+                <Grid item xs={12} sx={{ mt: 2 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "#388E3C", mb: 1 }}>
+                    Dados do Motorista
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, color: "#495057" }}>
+                    Nome:
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#2C3E50" }}>
+                    {collectionConfirmationModal.collectionData?.motorista_nome || "Não informado"}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, color: "#495057" }}>
+                    Matrícula:
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#2C3E50" }}>
+                    {collectionConfirmationModal.collectionData?.motorista_matricula || "Não informado"}
+                  </Typography>
+                </Grid>
+
+                {/* Dados do Coletor */}
+                <Grid item xs={12} sx={{ mt: 2 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "#388E3C", mb: 1 }}>
+                    Dados do Coletor
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, color: "#495057" }}>
+                    Nome:
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#2C3E50" }}>
+                    {collectionConfirmationModal.collectionData?.coletor_nome || "Não informado"}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, color: "#495057" }}>
+                    Matrícula:
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#2C3E50" }}>
+                    {collectionConfirmationModal.collectionData?.coletor_matricula || "Não informado"}
+                  </Typography>
+                </Grid>
+
+                {/* Horários */}
+                <Grid item xs={12} sx={{ mt: 2 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "#388E3C", mb: 1 }}>
+                    Horários
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, color: "#495057" }}>
+                    Chegada:
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#2C3E50" }}>
+                    {collectionConfirmationModal.collectionData?.horario_chegada || "Não informado"}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, color: "#495057" }}>
+                    Saída:
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#2C3E50" }}>
+                    {collectionConfirmationModal.collectionData?.horario_saida || "Não informado"}
+                  </Typography>
+                </Grid>
+
+                {/* Materiais Coletados */}
+                <Grid item xs={12} sx={{ mt: 2 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "#388E3C", mb: 1 }}>
+                    Materiais Coletados
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#2C3E50" }}>
+                    {collectionConfirmationModal.collectionData?.materiais_coletados?.length > 0
+                      ? collectionConfirmationModal.collectionData.materiais_coletados.join(", ")
+                      : "Nenhum material selecionado"}
+                  </Typography>
+                </Grid>
+
+                {/* Volume */}
+                <Grid item xs={12} sx={{ mt: 2 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "#388E3C", mb: 1 }}>
+                    Volume do Material
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#2C3E50" }}>
+                    {collectionConfirmationModal.collectionData?.volume_avaliacao || "Não informado"}
+                  </Typography>
+                </Grid>
+
+                {/* Responsável */}
+                <Grid item xs={12} sx={{ mt: 2 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "#388E3C", mb: 1 }}>
+                    Dados do Responsável
+                  </Typography>
+                </Grid>
+                <Grid item xs={4}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, color: "#495057" }}>
+                    Nome:
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#2C3E50" }}>
+                    {collectionConfirmationModal.collectionData?.assinatura_responsavel || "Não informado"}
+                  </Typography>
+                </Grid>
+                <Grid item xs={4}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, color: "#495057" }}>
+                    Telefone:
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#2C3E50" }}>
+                    {collectionConfirmationModal.collectionData?.telefone_responsavel || "Não informado"}
+                  </Typography>
+                </Grid>
+                <Grid item xs={4}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, color: "#495057" }}>
+                    CPF:
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: "#2C3E50" }}>
+                    {collectionConfirmationModal.collectionData?.cpf_responsavel || "Não informado"}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Box>
+
+            <Typography
+              variant="body1"
+              sx={{
+                color: "#6C757D",
+                fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                textAlign: "center",
+                lineHeight: 1.6,
+                fontStyle: "italic",
+              }}
+            >
+              Deseja confirmar o envio deste formulário de coleta?
+            </Typography>
+          </DialogContent>
+
+          <DialogActions
+            sx={{
+              justifyContent: "center",
+              pb: 3,
+              px: 4,
+              gap: 2,
+            }}
+          >
+            <Button
+              onClick={handleCancelCollectionSubmission}
+              variant="outlined"
+              sx={{
+                borderColor: "#6C757D",
+                color: "#6C757D",
+                "&:hover": {
+                  borderColor: "#495057",
+                  color: "#495057",
+                  backgroundColor: "rgba(108, 117, 125, 0.04)",
+                },
+                borderRadius: 2,
+                px: 4,
+                py: 1,
+                fontSize: "1rem",
+                fontWeight: 500,
+                textTransform: "none",
+                transition: "all 0.3s ease-in-out",
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleConfirmCollectionSubmission}
+              variant="contained"
+              disabled={loading}
+              sx={{
+                backgroundColor: "#2196F3",
+                color: "white",
+                "&:hover": {
+                  backgroundColor: "#1976D2",
+                  boxShadow: "0 6px 16px rgba(33, 150, 243, 0.3)",
+                  transform: "translateY(-1px)",
+                },
+                "&:disabled": {
+                  backgroundColor: "#ccc",
+                  color: "#999",
+                },
+                borderRadius: 2,
+                px: 4,
+                py: 1,
+                fontSize: "1rem",
+                fontWeight: 600,
+                textTransform: "none",
+                boxShadow: "0 4px 12px rgba(33, 150, 243, 0.2)",
+                transition: "all 0.3s ease-in-out",
+              }}
+            >
+              {loading ? "Enviando..." : "Confirmar Envio"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         {/* Modal para feedback */}
         <Dialog
           open={modal.open}
@@ -1029,7 +1712,6 @@ export default function ColetaForm() {
             >
               <Close />
             </IconButton>
-
             <Box sx={{ mb: 2 }}>
               {modal.type === "success" && (
                 <CheckCircle
@@ -1062,7 +1744,6 @@ export default function ColetaForm() {
                 />
               )}
             </Box>
-
             <Typography
               variant="h6"
               sx={{
@@ -1077,7 +1758,6 @@ export default function ColetaForm() {
               {modal.type === "error" && "Erro"}
               {modal.type === "warning" && "Atenção"}
             </Typography>
-
             <Typography
               variant="body1"
               sx={{
@@ -1091,7 +1771,6 @@ export default function ColetaForm() {
               {modal.message}
             </Typography>
           </DialogContent>
-
           <DialogActions
             sx={{
               justifyContent: "center",

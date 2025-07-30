@@ -101,84 +101,31 @@ export const listarTotaisPorEscolaPaginado = async (page = 1, pageSize = 1777) =
   }
 }
 
-export const top10EscolasMaisPontos = async () => {
-  console.log("🔄 [API] Iniciando top10EscolasMaisPontos")
 
+export const getRankingEscolasPontos = async () => {
   try {
-    console.log("📡 [API] Fazendo requisição para:", `${BASE_URL}api/form/top_10/`)
-    const response = await axios.get(`${BASE_URL}api/form/top_10/`)
+    const response = await fetch(`${BASE_URL}api/form/ranking/`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-    console.log("✅ [API] Resposta recebida - top10EscolasMaisPontos:", response.data)
-
-    const data = response.data
-    const lista = Array.isArray(data.top_10_escolas) ? data.top_10_escolas : []
-
-    console.log("🔍 [API] Lista extraída de top_10_escolas:", lista)
-    console.log("📊 [API] Quantidade de escolas no top 10:", lista.length)
-
-    if (lista.length === 0) {
-      console.log("⚠️ [API] Nenhum dado encontrado em top_10_escolas")
-      return { erro: "Nenhum dado encontrado em 'top_10_escolas'." }
+    if (!response.ok) {
+      throw new Error('Erro ao buscar o ranking das escolas');
     }
 
-    const resultadosMapeados = lista.map((item, index) => {
-      console.log(`🔄 [API] Mapeando escola ${index + 1}:`, item)
-      return {
-        escolaNome: typeof item.escola_nome === "string" ? item.escola_nome : "",
-        pontos: typeof item.pontos === "number" ? item.pontos : 0,
-      }
-    })
-
-    console.log("✅ [API] Dados finais mapeados - top10EscolasMaisPontos:", resultadosMapeados)
+    const data = await response.json();
 
     return {
-      sucesso: true,
-      resultados: resultadosMapeados,
-    }
+      top_10_escolas: data.top_10_escolas, // [{ escola_nome: '...', pontos: ... }, ...]
+      bottom_5_escolas: data.bottom_5_escolas // [{ escola_nome: '...', pontos: ... }, ...]
+    };
   } catch (error) {
-    console.error("❌ [API] Erro em top10EscolasMaisPontos:", error)
-    console.error("❌ [API] Detalhes do erro:", error.message)
-    return { erro: `Erro ao enviar requisição: ${error.message}` }
-  }
-}
-
-export const bottom5EscolasMenosPontos = async () => {
-  console.log("🔄 [API] Iniciando bottom5EscolasMenosPontos")
-
-  try {
-    console.log("📡 [API] Fazendo requisição para:", `${BASE_URL}api/form/bottom_5/`)
-    const response = await axios.get(`${BASE_URL}api/form/bottom_5/`)
-
-    console.log("✅ [API] Resposta recebida - bottom5EscolasMenosPontos:", response.data)
-
-    const data = response.data
-    const lista = Array.isArray(data.bottom_5_escolas) ? data.bottom_5_escolas : []
-
-    console.log("🔍 [API] Lista extraída de bottom_5_escolas:", lista)
-    console.log("📊 [API] Quantidade de escolas no bottom 5:", lista.length)
-
-    if (lista.length === 0) {
-      console.log("⚠️ [API] Nenhum dado encontrado em bottom_5_escolas")
-      return { erro: "Nenhum dado encontrado em 'bottom_5_escolas'." }
-    }
-
-    const resultadosMapeados = lista.map((item, index) => {
-      console.log(`🔄 [API] Mapeando escola ${index + 1}:`, item)
-      return {
-        escolaNome: typeof item.escola_nome === "string" ? item.escola_nome : "",
-        pontos: typeof item.pontos === "number" ? item.pontos : 0,
-      }
-    })
-
-    console.log("✅ [API] Dados finais mapeados - bottom5EscolasMenosPontos:", resultadosMapeados)
-
+    console.error('Erro na service getRankingEscolasPontos:', error);
     return {
-      sucesso: true,
-      resultados: resultadosMapeados,
-    }
-  } catch (error) {
-    console.error("❌ [API] Erro em bottom5EscolasMenosPontos:", error)
-    console.error("❌ [API] Detalhes do erro:", error.message)
-    return { erro: `Erro ao enviar requisição: ${error.message}` }
+      top_10_escolas: [],
+      bottom_5_escolas: []
+    };
   }
-}
+};

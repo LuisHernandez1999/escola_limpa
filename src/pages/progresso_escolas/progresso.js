@@ -7,7 +7,6 @@ import {
   Typography,
   Container,
   Box,
-  Grid,
   Paper,
   Table,
   TableBody,
@@ -15,22 +14,28 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Card,
-  CardContent,
   Chip,
   Avatar,
   Divider,
-  LinearProgress,
   CircularProgress,
   Alert,
+  Pagination,
+  Stack,
 } from "@mui/material"
-import { EmojiEvents, School, TrendingUp, Assignment, CalendarToday } from "@mui/icons-material"
-import Image from "next/image"
 import {
-  top10EscolasMaisPontos,
-  bottom5EscolasMenosPontos,
-  listarTotaisPorEscolaPaginado,
-} from "@/service/service_dados"
+  EmojiEvents,
+  School,
+  TrendingUp,
+  Assignment,
+  CalendarToday,
+  RecyclingOutlined,
+  DescriptionOutlined,
+  BatteryChargingFullOutlined,
+  PhoneAndroidOutlined,
+  LocalOfferOutlined,
+} from "@mui/icons-material"
+import Image from "next/image"
+import { listarTotaisPorEscolaPaginado, getRankingEscolasPontos } from "@/service/service_dados"
 
 // Componente para o relógio em tempo real
 function LiveClock() {
@@ -127,142 +132,79 @@ export default function SchoolProgress() {
   // Estados para os dados da API
   const [topSchools, setTopSchools] = useState([])
   const [bottomSchools, setBottomSchools] = useState([])
-  const [recentRegistrations, setRecentRegistrations] = useState([])
+  const [allSchools, setAllSchools] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  // Estados para paginação
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [pageSize] = useState(10)
 
   // Carregar dados da API
   useEffect(() => {
     const loadData = async () => {
       console.log("🚀 [PAGE] Iniciando carregamento de dados...")
-
       try {
         setLoading(true)
         setError(null)
 
-        console.log("📡 [PAGE] Fazendo chamadas para todas as APIs em paralelo...")
+        // Carregar ranking das escolas
+        console.log("📡 [PAGE] Carregando ranking das escolas...")
+        const rankingResult = await getRankingEscolasPontos()
+        console.log("🏆 [PAGE] Resultado do ranking:", rankingResult)
 
-        // Testar cada API individualmente primeiro
-        console.log("🧪 [PAGE] Testando listarTotaisPorEscolaPaginado...")
-        const listResult = await listarTotaisPorEscolaPaginado(1, 10)
-        console.log("🧪 [PAGE] Resultado de listarTotaisPorEscolaPaginado:", listResult)
-        console.log("🧪 [PAGE] Tipo do resultado:", typeof listResult)
-        console.log("🧪 [PAGE] Propriedades do resultado:", Object.keys(listResult))
-
-        console.log("🧪 [PAGE] Testando top10EscolasMaisPontos...")
-        const topResult = await top10EscolasMaisPontos()
-        console.log("🧪 [PAGE] Resultado de top10EscolasMaisPontos:", topResult)
-
-        console.log("🧪 [PAGE] Testando bottom5EscolasMenosPontos...")
-        const bottomResult = await bottom5EscolasMenosPontos()
-        console.log("🧪 [PAGE] Resultado de bottom5EscolasMenosPontos:", bottomResult)
-
-        console.log("✅ [PAGE] Todos os resultados recebidos:")
-        console.log("🏆 [PAGE] Top 10 Result:", topResult)
-        console.log("📈 [PAGE] Bottom 5 Result:", bottomResult)
-        console.log("📋 [PAGE] Lista Result:", listResult)
-
-        // Verificar erros individualmente
-        if (topResult.erro) {
-          console.error("❌ [PAGE] Erro no Top 10:", topResult.erro)
-          throw new Error(`Top 10: ${topResult.erro}`)
+        if (rankingResult.top_10_escolas) {
+          setTopSchools(rankingResult.top_10_escolas)
         }
-        if (bottomResult.erro) {
-          console.error("❌ [PAGE] Erro no Bottom 5:", bottomResult.erro)
-          throw new Error(`Bottom 5: ${bottomResult.erro}`)
-        }
-        if (listResult.erro) {
-          console.error("❌ [PAGE] Erro na Lista:", listResult.erro)
-          throw new Error(`Lista completa: ${listResult.erro}`)
+        if (rankingResult.bottom_5_escolas) {
+          setBottomSchools(rankingResult.bottom_5_escolas)
         }
 
-        console.log("🔄 [PAGE] Iniciando mapeamento dos dados para a UI...")
-
-        // Mapear dados do top 10 para o formato esperado pela UI
-        const mappedTopSchools = topResult.resultados.map((escola, index) => {
-          const mapped = {
-            name: escola.escolaNome,
-            points: escola.pontos,
-            collections: Math.floor(escola.pontos / 50), // Estimativa baseada nos pontos
-            trend: `+${Math.floor(Math.random() * 20 + 1)}%`, // Trend simulado
-          }
-          console.log(`🏆 [PAGE] Top escola ${index + 1} mapeada:`, mapped)
-          return mapped
-        })
-
-        // Mapear dados do bottom 5 para o formato esperado pela UI
-        const mappedBottomSchools = bottomResult.resultados.map((escola, index) => {
-          const mapped = {
-            name: escola.escolaNome,
-            points: escola.pontos,
-            collections: Math.floor(escola.pontos / 50), // Estimativa baseada nos pontos
-            trend: `+${Math.floor(Math.random() * 10 + 1)}%`, // Trend simulado
-          }
-          console.log(`📈 [PAGE] Bottom escola ${index + 1} mapeada:`, mapped)
-          return mapped
-        })
-
-        // Mapear dados da lista completa para registros recentes
-        const mappedRecentRegistrations = listResult.resultados.map((escola, index) => {
-          console.log(`📋 [PAGE] Processando escola ${index + 1} para registros:`, escola)
-
-          const materiais = []
-          if (escola.totalPlastico > 0) materiais.push("Plástico")
-          if (escola.totalPapel > 0) materiais.push("Papel")
-          if (escola.totalAluminio > 0) materiais.push("Alumínio")
-          if (escola.totalEletronico > 0) materiais.push("Eletrônico")
-
-          // Determinar volume baseado nos totais
-          let volume = "Bag Vazio"
-          if (escola.totalCheio > 0) volume = "Bag Cheio"
-          else if (escola.totalSemiCheio > 0) volume = "Bag Semi Cheio"
-
-          // Formatar data se disponível
-          let dataFormatada = "28/01/2025"
-          let horaFormatada = `${10 + index}:${30 + ((index * 15) % 60)}`
-
-          if (escola.dataMaisRecente) {
-            const data = new Date(escola.dataMaisRecente)
-            dataFormatada = data.toLocaleDateString("pt-BR")
-            horaFormatada = data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
-          }
-
-          const mapped = {
-            id: index + 1,
-            school: escola.nomeEscola,
-            date: dataFormatada,
-            time: horaFormatada,
-            collector: `Coletor ${index + 1}`, // Simulado pois não vem da API
-            materials: materiais.length > 0 ? materiais : ["Sem materiais"],
-            volume: volume,
-          }
-
-          console.log(`📋 [PAGE] Registro ${index + 1} mapeado:`, mapped)
-          return mapped
-        })
-
-        console.log("✅ [PAGE] Todos os dados mapeados com sucesso!")
-        console.log("🏆 [PAGE] Top Schools Final:", mappedTopSchools)
-        console.log("📈 [PAGE] Bottom Schools Final:", mappedBottomSchools)
-        console.log("📋 [PAGE] Recent Registrations Final:", mappedRecentRegistrations)
-
-        setTopSchools(mappedTopSchools)
-        setBottomSchools(mappedBottomSchools)
-        setRecentRegistrations(mappedRecentRegistrations)
-
-        console.log("🎉 [PAGE] Estados atualizados com sucesso!")
+        console.log("✅ [PAGE] Ranking carregado com sucesso!")
       } catch (err) {
-        console.error("💥 [PAGE] Erro durante o carregamento:", err)
-        console.error("💥 [PAGE] Stack trace:", err.stack)
+        console.error("💥 [PAGE] Erro durante o carregamento do ranking:", err)
         setError(err.message)
       } finally {
-        console.log("🏁 [PAGE] Finalizando carregamento...")
         setLoading(false)
       }
     }
 
     loadData()
   }, [])
+
+  // Carregar dados paginados
+  useEffect(() => {
+    const loadPaginatedData = async () => {
+      console.log(`🚀 [PAGE] Carregando dados da página ${currentPage}...`)
+      try {
+        const listResult = await listarTotaisPorEscolaPaginado(currentPage, pageSize)
+        console.log("📋 [PAGE] Resultado da lista paginada:", listResult)
+
+        if (listResult.erro) {
+          throw new Error(listResult.erro)
+        }
+
+        if (listResult.sucesso) {
+          setAllSchools(listResult.resultados)
+          setTotalPages(Math.ceil(listResult.totalEscolas / pageSize))
+        }
+
+        console.log("✅ [PAGE] Dados paginados carregados com sucesso!")
+      } catch (err) {
+        console.error("💥 [PAGE] Erro durante o carregamento dos dados paginados:", err)
+        setError(err.message)
+      }
+    }
+
+    if (!loading) {
+      loadPaginatedData()
+    }
+  }, [currentPage, pageSize, loading])
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value)
+  }
 
   const getPositionColor = (position) => {
     if (position === 1) return "#FFD700" // Ouro
@@ -281,6 +223,21 @@ export default function SchoolProgress() {
         return "#F44336"
       default:
         return "#9E9E9E"
+    }
+  }
+
+  const getMaterialIcon = (material) => {
+    switch (material.toLowerCase()) {
+      case "plástico":
+        return <RecyclingOutlined sx={{ fontSize: 16 }} />
+      case "papel":
+        return <DescriptionOutlined sx={{ fontSize: 16 }} />
+      case "alumínio":
+        return <BatteryChargingFullOutlined sx={{ fontSize: 16 }} />
+      case "eletrônico":
+        return <PhoneAndroidOutlined sx={{ fontSize: 16 }} />
+      default:
+        return <LocalOfferOutlined sx={{ fontSize: 16 }} />
     }
   }
 
@@ -421,7 +378,7 @@ export default function SchoolProgress() {
       </AppBar>
 
       <Container maxWidth="xl" sx={{ flexGrow: 1, py: 4, pb: 8 }}>
-        {/* Top 10 Escolas com Mais Pontos */}
+        {/* Tabela Top 10 Escolas com Mais Pontos - VERDE */}
         <Paper
           elevation={6}
           sx={{
@@ -439,7 +396,7 @@ export default function SchoolProgress() {
               variant="h5"
               component="h2"
               sx={{
-                color: "#388E3C",
+                color: "#4CAF50",
                 fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
                 fontWeight: 500,
                 letterSpacing: "0.02em",
@@ -448,103 +405,103 @@ export default function SchoolProgress() {
               TOP 10 ESCOLAS - MAIORES PONTUAÇÕES
             </Typography>
           </Box>
-          <Grid container spacing={3} sx={{ justifyContent: "center" }}>
-            {topSchools.map((school, index) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} xl={2.4} key={index}>
-                <Card
-                  sx={{
-                    height: "280px", // Altura fixa para uniformidade
-                    display: "flex",
-                    flexDirection: "column",
-                    background:
-                      index < 3
-                        ? `linear-gradient(135deg, ${getPositionColor(index + 1)}15, ${getPositionColor(index + 1)}05)`
-                        : "linear-gradient(135deg, #4CAF5015, #4CAF5005)",
-                    border: `2px solid ${getPositionColor(index + 1)}`,
-                    borderRadius: 2,
-                    transition: "all 0.3s ease-in-out",
-                    "&:hover": {
-                      transform: "translateY(-4px)",
-                      boxShadow: "0 12px 40px rgba(0,0,0,0.15)",
-                    },
-                  }}
-                >
-                  <CardContent
+          <TableContainer
+            sx={{
+              borderRadius: 2,
+              border: "1px solid #E0E0E0",
+              maxHeight: 600,
+            }}
+          >
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow>
+                  <TableCell
                     sx={{
+                      bgcolor: "#4CAF50",
+                      color: "white",
+                      fontWeight: "bold",
+                      fontSize: "1rem",
                       textAlign: "center",
-                      p: 3,
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                      height: "100%",
                     }}
                   >
-                    <Box>
-                      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", mb: 2 }}>
-                        <Avatar
-                          sx={{
-                            bgcolor: getPositionColor(index + 1),
-                            color: "white",
-                            fontWeight: "bold",
-                            width: 40,
-                            height: 40,
-                            fontSize: "1.2rem",
-                          }}
-                        >
-                          {index + 1}
-                        </Avatar>
-                      </Box>
+                    Posição
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      bgcolor: "#4CAF50",
+                      color: "white",
+                      fontWeight: "bold",
+                      fontSize: "1rem",
+                    }}
+                  >
+                    Escola
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      bgcolor: "#4CAF50",
+                      color: "white",
+                      fontWeight: "bold",
+                      fontSize: "1rem",
+                      textAlign: "center",
+                    }}
+                  >
+                    Pontos
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {topSchools.map((school, index) => (
+                  <TableRow
+                    key={index}
+                    sx={{
+                      "&:nth-of-type(odd)": {
+                        bgcolor: index < 3 ? `${getPositionColor(index + 1)}10` : "#4CAF5010",
+                      },
+                      "&:hover": {
+                        bgcolor: index < 3 ? `${getPositionColor(index + 1)}20` : "#4CAF5020",
+                        transform: "scale(1.01)",
+                        transition: "all 0.2s ease-in-out",
+                      },
+                    }}
+                  >
+                    <TableCell sx={{ textAlign: "center" }}>
+                      <Avatar
+                        sx={{
+                          bgcolor: getPositionColor(index + 1),
+                          color: "white",
+                          fontWeight: "bold",
+                          width: 35,
+                          height: 35,
+                          fontSize: "1rem",
+                          margin: "0 auto",
+                        }}
+                      >
+                        {index + 1}
+                      </Avatar>
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: "#2C3E50", fontSize: "1.1rem" }}>
+                      {school.escola_nome}
+                    </TableCell>
+                    <TableCell sx={{ textAlign: "center" }}>
                       <Typography
                         variant="h6"
                         sx={{
-                          fontSize: "1rem",
-                          fontWeight: 600,
-                          color: "#2C3E50",
-                          mb: 2,
-                          minHeight: "3em",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          lineHeight: 1.2,
-                        }}
-                      >
-                        {school.name}
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography
-                        variant="h4"
-                        sx={{
                           color: getPositionColor(index + 1),
                           fontWeight: "bold",
-                          mb: 1,
-                          fontSize: "2rem",
+                          fontSize: "1.3rem",
                         }}
                       >
-                        {school.points.toLocaleString()}
+                        {school.pontos.toLocaleString()}
                       </Typography>
-                      <Typography variant="body2" sx={{ color: "#666", display: "block", mb: 2 }}>
-                        pontos
-                      </Typography>
-                      <Chip
-                        label={school.trend}
-                        size="medium"
-                        sx={{
-                          bgcolor: school.trend.includes("+") ? "#4CAF5020" : "#F4433620",
-                          color: school.trend.includes("+") ? "#4CAF50" : "#F44336",
-                          fontWeight: "bold",
-                          fontSize: "0.9rem",
-                        }}
-                      />
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </Paper>
 
-        {/* Top 5 Escolas com Menos Pontos */}
+        {/* Componente com Quantidades das 5 Escolas que Precisam Crescer - AZUL */}
         <Paper
           elevation={6}
           sx={{
@@ -557,119 +514,120 @@ export default function SchoolProgress() {
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", mb: 3, justifyContent: "center" }}>
-            <TrendingUp sx={{ color: "#FF9800", fontSize: 32, mr: 2 }} />
+            <TrendingUp sx={{ color: "#2196F3", fontSize: 32, mr: 2 }} />
             <Typography
               variant="h5"
               component="h2"
               sx={{
-                color: "#388E3C",
+                color: "#4CAF50",
                 fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
                 fontWeight: 500,
                 letterSpacing: "0.02em",
               }}
             >
-              TOP 5 ESCOLAS - OPORTUNIDADES DE CRESCIMENTO
+              5 ESCOLAS COM OPORTUNIDADES DE CRESCIMENTO
             </Typography>
           </Box>
-          <Grid container spacing={3} sx={{ justifyContent: "center" }}>
-            {bottomSchools.map((school, index) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} xl={2.4} key={index}>
-                <Card
-                  sx={{
-                    height: "320px", // Altura fixa maior para acomodar a barra de progresso
-                    display: "flex",
-                    flexDirection: "column",
-                    background: "linear-gradient(135deg, #FF980015, #FF980005)",
-                    border: "2px solid #FF9800",
-                    borderRadius: 2,
-                    transition: "all 0.3s ease-in-out",
-                    "&:hover": {
-                      transform: "translateY(-4px)",
-                      boxShadow: "0 12px 40px rgba(0,0,0,0.15)",
-                    },
-                  }}
-                >
-                  <CardContent
+          <TableContainer
+            sx={{
+              borderRadius: 2,
+              border: "1px solid #E0E0E0",
+              maxHeight: 600,
+            }}
+          >
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow>
+                  <TableCell
                     sx={{
+                      bgcolor: "#4CAF50",
+                      color: "white",
+                      fontWeight: "bold",
+                      fontSize: "1rem",
                       textAlign: "center",
-                      p: 3,
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                      height: "100%",
                     }}
                   >
-                    <Box>
-                      <School sx={{ color: "#FF9800", fontSize: 40, mb: 2 }} />
+                    Posição
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      bgcolor: "#4CAF50",
+                      color: "white",
+                      fontWeight: "bold",
+                      fontSize: "1rem",
+                    }}
+                  >
+                    Escola
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      bgcolor: "#4CAF50",
+                      color: "white",
+                      fontWeight: "bold",
+                      fontSize: "1rem",
+                      textAlign: "center",
+                    }}
+                  >
+                    Pontos Atuais
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {bottomSchools.map((school, index) => (
+                  <TableRow
+                    key={index}
+                    sx={{
+                      "&:nth-of-type(odd)": {
+                        bgcolor: "#2196F310",
+                      },
+                      "&:hover": {
+                        bgcolor: "#2196F320",
+                        transform: "scale(1.01)",
+                        transition: "all 0.2s ease-in-out",
+                      },
+                    }}
+                  >
+                    <TableCell sx={{ textAlign: "center" }}>
+                      <Avatar
+                        sx={{
+                          bgcolor: "#2196F3",
+                          color: "white",
+                          fontWeight: "bold",
+                          width: 35,
+                          height: 35,
+                          fontSize: "1rem",
+                          margin: "0 auto",
+                        }}
+                      >
+                        {index + 1}
+                      </Avatar>
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: "#2C3E50", fontSize: "1.1rem" }}>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <School sx={{ color: "#2196F3", fontSize: 20 }} />
+                        {school.escola_nome}
+                      </Box>
+                    </TableCell>
+                    <TableCell sx={{ textAlign: "center" }}>
                       <Typography
                         variant="h6"
                         sx={{
-                          fontSize: "1rem",
-                          fontWeight: 600,
-                          color: "#2C3E50",
-                          mb: 2,
-                          minHeight: "3em",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          lineHeight: 1.2,
+                          color: "#2196F3",
+                          fontWeight: "bold",
+                          fontSize: "1.3rem",
                         }}
                       >
-                        {school.name}
+                        {school.pontos.toLocaleString()}
                       </Typography>
-                    </Box>
-                    <Box>
-                      <Typography
-                        variant="h4"
-                        sx={{
-                          color: "#FF9800",
-                          fontWeight: "bold",
-                          mb: 1,
-                          fontSize: "2rem",
-                        }}
-                      >
-                        {school.points.toLocaleString()}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: "#666", display: "block", mb: 2 }}>
-                        pontos
-                      </Typography>
-                      <Box sx={{ mb: 2 }}>
-                        <Typography variant="caption" sx={{ color: "#666", mb: 1, display: "block" }}>
-                          Progresso para próximo nível
-                        </Typography>
-                        <LinearProgress
-                          variant="determinate"
-                          value={(school.points / 1000) * 100}
-                          sx={{
-                            height: 8,
-                            borderRadius: 4,
-                            bgcolor: "#FF980020",
-                            "& .MuiLinearProgress-bar": {
-                              bgcolor: "#FF9800",
-                              borderRadius: 4,
-                            },
-                          }}
-                        />
-                      </Box>
-                      <Chip
-                        label={school.trend}
-                        size="medium"
-                        sx={{
-                          bgcolor: school.trend.includes("+") ? "#4CAF5020" : "#F4433620",
-                          color: school.trend.includes("+") ? "#4CAF50" : "#F44336",
-                          fontWeight: "bold",
-                          fontSize: "0.9rem",
-                        }}
-                      />
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </Paper>
 
-        {/* Tabela de Novos Cadastros */}
+        {/* Tabela de Novos Cadastros com Paginação - AMARELO */}
         <Paper
           elevation={6}
           sx={{
@@ -686,7 +644,7 @@ export default function SchoolProgress() {
               variant="h5"
               component="h2"
               sx={{
-                color: "#388E3C",
+                color: "#4CAF50",
                 fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
                 fontWeight: 500,
                 letterSpacing: "0.02em",
@@ -700,6 +658,7 @@ export default function SchoolProgress() {
               borderRadius: 2,
               border: "1px solid #E0E0E0",
               maxHeight: 600,
+              mb: 3,
             }}
           >
             <Table stickyHeader>
@@ -748,60 +707,162 @@ export default function SchoolProgress() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {recentRegistrations.map((registration) => (
-                  <TableRow
-                    key={registration.id}
-                    sx={{
-                      "&:nth-of-type(odd)": {
-                        bgcolor: "#F8F9FA",
-                      },
-                      "&:hover": {
-                        bgcolor: "#E8F5E8",
-                        transform: "scale(1.01)",
-                        transition: "all 0.2s ease-in-out",
-                      },
-                    }}
-                  >
-                    <TableCell sx={{ fontWeight: 500, color: "#2C3E50" }}>{registration.school}</TableCell>
-                    <TableCell>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                        <CalendarToday sx={{ color: "#666", fontSize: 16 }} />
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {registration.date}
-                        </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
-                        {registration.materials.map((material, index) => (
-                          <Chip
-                            key={index}
-                            label={material}
-                            size="small"
-                            sx={{
-                              bgcolor: "#4CAF5015",
-                              color: "#4CAF50",
-                              fontSize: "0.75rem",
-                            }}
-                          />
-                        ))}
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={registration.volume}
-                        sx={{
-                          bgcolor: `${getVolumeColor(registration.volume)}15`,
-                          color: getVolumeColor(registration.volume),
-                          fontWeight: "bold",
-                        }}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {allSchools.map((school, index) => {
+                  // Mapear dados para o formato da tabela antiga
+                  const materiais = []
+                  if (school.totalPlastico > 0) materiais.push("Plástico")
+                  if (school.totalPapel > 0) materiais.push("Papel")
+                  if (school.totalAluminio > 0) materiais.push("Alumínio")
+                  if (school.totalEletronico > 0) materiais.push("Eletrônico")
+
+                  // Determinar volume baseado nos totais
+                  let volume = "Bag Vazio"
+                  if (school.totalCheio > 0) volume = "Bag Cheio"
+                  else if (school.totalSemiCheio > 0) volume = "Bag Semi Cheio"
+
+                  // Formatar data se disponível
+                  let dataFormatada = "28/01/2025"
+                  if (school.dataMaisRecente) {
+                    const data = new Date(school.dataMaisRecente)
+                    dataFormatada = data.toLocaleDateString("pt-BR")
+                  }
+
+                  return (
+                    <TableRow
+                      key={index}
+                      sx={{
+                        "&:nth-of-type(odd)": {
+                          bgcolor: "#2196F310",
+                        },
+                        "&:hover": {
+                          bgcolor: "#2196F320",
+                          transform: "scale(1.01)",
+                          transition: "all 0.2s ease-in-out",
+                        },
+                      }}
+                    >
+                      <TableCell sx={{ fontWeight: 500, color: "#2C3E50" }}>{school.nomeEscola}</TableCell>
+                      <TableCell>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <CalendarToday sx={{ color: "#666", fontSize: 16 }} />
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            {dataFormatada}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
+                          {school.totalPlastico > 0 && (
+                            <Chip
+                              label={`Plástico: ${school.totalPlastico}`}
+                              size="small"
+                              sx={{
+                                bgcolor: "#4CAF5015",
+                                color: "#4CAF50",
+                                fontSize: "0.75rem",
+                              }}
+                            />
+                          )}
+                          {school.totalPapel > 0 && (
+                            <Chip
+                              label={`Papel: ${school.totalPapel}`}
+                              size="small"
+                              sx={{
+                                bgcolor: "#2196F315",
+                                color: "#2196F3",
+                                fontSize: "0.75rem",
+                              }}
+                            />
+                          )}
+                          {school.totalAluminio > 0 && (
+                            <Chip
+                              label={`Alumínio: ${school.totalAluminio}`}
+                              size="small"
+                              sx={{
+                                bgcolor: "#FF980015",
+                                color: "#FF9800",
+                                fontSize: "0.75rem",
+                              }}
+                            />
+                          )}
+                          {school.totalEletronico > 0 && (
+                            <Chip
+                              label={`Eletrônico: ${school.totalEletronico}`}
+                              size="small"
+                              sx={{
+                                bgcolor: "#9C27B015",
+                                color: "#9C27B0",
+                                fontSize: "0.75rem",
+                              }}
+                            />
+                          )}
+                          {school.totalPlastico === 0 &&
+                            school.totalPapel === 0 &&
+                            school.totalAluminio === 0 &&
+                            school.totalEletronico === 0 && (
+                              <Chip
+                                label="Sem materiais"
+                                size="small"
+                                sx={{
+                                  bgcolor: "#9E9E9E15",
+                                  color: "#9E9E9E",
+                                  fontSize: "0.75rem",
+                                }}
+                              />
+                            )}
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={volume}
+                          sx={{
+                            bgcolor: `${getVolumeColor(volume)}15`,
+                            color: getVolumeColor(volume),
+                            fontWeight: "bold",
+                          }}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
           </TableContainer>
+
+          {/* Paginação */}
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+            <Stack spacing={2}>
+              <Pagination
+                count={totalPages}
+                page={currentPage}
+                onChange={handlePageChange}
+                color="primary"
+                size="large"
+                showFirstButton
+                showLastButton
+                sx={{
+                  "& .MuiPaginationItem-root": {
+                    fontSize: "1rem",
+                    fontWeight: "bold",
+                  },
+                  "& .Mui-selected": {
+                    bgcolor: "#4CAF50 !important",
+                    color: "white",
+                  },
+                }}
+              />
+              <Typography
+                variant="body2"
+                sx={{
+                  textAlign: "center",
+                  color: "#666",
+                  fontSize: "0.9rem",
+                }}
+              >
+                Página {currentPage} de {totalPages} - Mostrando {allSchools.length} escolas
+              </Typography>
+            </Stack>
+          </Box>
         </Paper>
       </Container>
 
