@@ -1,6 +1,6 @@
 "use client"
-
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import {
   AppBar,
   Toolbar,
@@ -14,6 +14,8 @@ import {
   CardContent,
   Divider,
   Fab,
+  CircularProgress,
+  Backdrop,
 } from "@mui/material"
 import Image from "next/image"
 import Recycling from "@mui/icons-material/Recycling"
@@ -26,8 +28,148 @@ import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown"
 import EmojiEvents from "@mui/icons-material/EmojiEvents"
 import WorkspacePremium from "@mui/icons-material/WorkspacePremium"
 
+// Componente de Loading
+const LoadingScreen = ({ open }) => (
+  <Backdrop
+    sx={{
+      color: "#fff",
+      zIndex: 9999,
+      background:
+        "linear-gradient(135deg, rgba(27, 94, 32, 0.95) 0%, rgba(46, 125, 50, 0.95) 50%, rgba(76, 175, 80, 0.95) 100%)",
+      backdropFilter: "blur(10px)",
+    }}
+    open={open}
+  >
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        textAlign: "center",
+        gap: 4,
+      }}
+    >
+      {/* Logo animado */}
+      <Box
+        sx={{
+          position: "relative",
+          animation: "pulse 2s ease-in-out infinite",
+          "@keyframes pulse": {
+            "0%": {
+              transform: "scale(1)",
+              opacity: 1,
+            },
+            "50%": {
+              transform: "scale(1.05)",
+              opacity: 0.8,
+            },
+            "100%": {
+              transform: "scale(1)",
+              opacity: 1,
+            },
+          },
+        }}
+      >
+        <Image
+          src="/escolas_logo.jpeg"
+          alt="Eco Escolas Logo"
+          width={120}
+          height={90}
+          style={{ objectFit: "contain" }}
+        />
+      </Box>
+
+      {/* Spinner customizado */}
+      <Box sx={{ position: "relative", display: "inline-flex" }}>
+        <CircularProgress
+          size={60}
+          thickness={4}
+          sx={{
+            color: "#A5D6A7",
+            animation: "spin 1.5s linear infinite",
+            "@keyframes spin": {
+              "0%": {
+                transform: "rotate(0deg)",
+              },
+              "100%": {
+                transform: "rotate(360deg)",
+              },
+            },
+          }}
+        />
+        <Box
+          sx={{
+            top: 0,
+            left: 0,
+            bottom: 0,
+            right: 0,
+            position: "absolute",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Recycling sx={{ fontSize: 24, color: "#E8F5E9" }} />
+        </Box>
+      </Box>
+
+      {/* Texto de carregamento */}
+      <Box>
+        <Typography
+          variant="h5"
+          sx={{
+            fontWeight: 700,
+            mb: 1,
+            color: "#E8F5E9",
+            fontFamily: "Inter, sans-serif",
+          }}
+        >
+          Carregando Progresso das Escolas
+        </Typography>
+        <Typography
+          variant="body1"
+          sx={{
+            color: "rgba(255, 255, 255, 0.8)",
+            maxWidth: "400px",
+            lineHeight: 1.6,
+          }}
+        >
+          Preparando os dados mais recentes do projeto EcoEscolas...
+        </Typography>
+      </Box>
+
+      {/* Indicadores de progresso animados */}
+      <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
+        {[0, 1, 2].map((index) => (
+          <Box
+            key={index}
+            sx={{
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              backgroundColor: "#A5D6A7",
+              animation: `bounce 1.4s ease-in-out ${index * 0.16}s infinite both`,
+              "@keyframes bounce": {
+                "0%, 80%, 100%": {
+                  transform: "scale(0)",
+                },
+                "40%": {
+                  transform: "scale(1)",
+                },
+              },
+            }}
+          />
+        ))}
+      </Box>
+    </Box>
+  </Backdrop>
+)
+
 export default function LandingPage() {
   const [isVisible, setIsVisible] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     setIsVisible(true)
@@ -37,6 +179,20 @@ export default function LandingPage() {
     const element = document.getElementById("progress-section")
     if (element) {
       element.scrollIntoView({ behavior: "smooth" })
+    }
+  }
+
+  const handleProgressClick = async () => {
+    setIsLoading(true)
+
+    // Simula um pequeno delay para mostrar o loading
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+
+    try {
+      router.push("/progresso_escolas/progresso")
+    } catch (error) {
+      console.error("Erro ao navegar:", error)
+      setIsLoading(false)
     }
   }
 
@@ -58,6 +214,9 @@ export default function LandingPage() {
         },
       }}
     >
+      {/* Loading Screen */}
+      <LoadingScreen open={isLoading} />
+
       {/* Decorative Elements */}
       <Box
         sx={{
@@ -143,11 +302,9 @@ export default function LandingPage() {
             zIndex: 0,
           }}
         />
-
         <Toolbar sx={{ py: 4, justifyContent: "center", position: "relative", zIndex: 1 }}>
           <Box sx={{ textAlign: "center", maxWidth: "1200px" }}>
             {/* Novo badge de destaque */}
-
             <Typography
               variant="h2"
               sx={{
@@ -164,9 +321,8 @@ export default function LandingPage() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              Projeto Eco Escolas 
+              Projeto Eco Escolas
             </Typography>
-
             <Box
               sx={{
                 display: "inline-block",
@@ -182,10 +338,9 @@ export default function LandingPage() {
               }}
             >
               <Typography variant="h5" sx={{ fontWeight: 800, fontSize: "1.3rem" }}>
-                1ª EDIÇÃO  • 2025
+                1ª EDIÇÃO • 2025
               </Typography>
             </Box>
-
             <Typography
               variant="h6"
               sx={{
@@ -198,7 +353,7 @@ export default function LandingPage() {
                 textShadow: "0 2px 4px rgba(0,0,0,0.2)",
               }}
             >
-              A primeira edição do projeto EcoEscolas de Goiânia está começando! Escolas participarão de forma saudável
+              A primeira edição do projeto EcoEscolas está começando! Escolas participarão de forma saudável
               desta nova iniciativa pela coleta consciente de resíduos e práticas ambientais inovadoras.
             </Typography>
           </Box>
@@ -245,7 +400,6 @@ export default function LandingPage() {
               PROJETO ECO ESCOLAS
             </Box>
             <br />
-            
           </Typography>
           <Box sx={{ mb: 6 }}>
             <Image
@@ -301,7 +455,7 @@ export default function LandingPage() {
                   textShadow: "0 2px 4px rgba(0,0,0,0.2)",
                 }}
               >
-                Uma Proposta Inédita e Transformadora
+                Uma Proposta Nova e Transformadora
               </Typography>
               <Typography
                 variant="h6"
@@ -317,7 +471,6 @@ export default function LandingPage() {
                 colaboração e a consciência ecológica são os verdadeiros vencedores.
               </Typography>
             </Box>
-
             <Grid container spacing={8} justifyContent="center" alignItems="center">
               <Grid item xs={12} md={4}>
                 <Box sx={{ textAlign: "center", py: 4 }}>
@@ -394,7 +547,7 @@ export default function LandingPage() {
                   fontSize: { xs: "1.5rem", md: "2rem" },
                 }}
               >
-                A Primeira Vez em Goiânia
+                A Primeira Vez 
               </Typography>
               <Typography
                 variant="body1"
@@ -418,7 +571,7 @@ export default function LandingPage() {
                   mb: 3,
                 }}
               >
-                A parceria inédita com a Limpa Gyn trouxe a expertise técnica necessária para criar algo nunca visto
+                A parceria  com a Limpa Gyn trouxe a expertise técnica necessária para criar algo nunca visto
                 antes: um projeto de conscientização onde ganhar significa cuidar melhor do planeta. Esta é a primeira
                 edição de um projeto que promete fazer história.
               </Typography>
@@ -444,7 +597,7 @@ export default function LandingPage() {
                 }}
               >
                 Esta primeira edição do EcoEscolas marca o início de uma nova fase na educação ambiental de Goiânia,
-                combinando aprendizado, diversão e responsabilidade social de forma inovadora.
+                combinando aprendizado, diversão e responsabilidade social.
               </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
@@ -479,8 +632,8 @@ export default function LandingPage() {
                 </Typography>
                 <Divider sx={{ bgcolor: "rgba(255,255,255,0.3)", mb: 3 }} />
                 <Typography variant="body1" sx={{ opacity: 0.95, lineHeight: 1.6, position: "relative" }}>
-                  O ano que marca o início de uma revolução na educação ambiental de Goiânia. Uma parceria  que
-                  criou a primeira projeto de conscientização sustentável entre escolas municipais.
+                  O ano que marca o início de uma nova proposta na educação ambiental de Goiânia. Uma parceria que criou
+                  a primeira projeto de conscientização sustentável entre escolas municipais.
                 </Typography>
               </Box>
             </Grid>
@@ -509,7 +662,7 @@ export default function LandingPage() {
               color: "#2E2E2E",
             }}
           >
-            Uma Parceria Transformadora e Inédita
+            Uma Parceria Transformadora 
           </Typography>
           <Grid container spacing={8} alignItems="center" justifyContent="center">
             <Grid item xs={12} md={5}>
@@ -541,8 +694,8 @@ export default function LandingPage() {
                   Secretaria Municipal de Educação
                 </Typography>
                 <Typography variant="body1" sx={{ mt: 3, color: "#888", lineHeight: 1.6 }}>
-                  Pioneira na criação desta primeira edição do projeto Eco Escolas  coordenando a
-                  implementação pedagógica inovadora e o desenvolvimento do currículo de educação sustentável
+                  Pioneira na criação desta primeira edição do projeto Eco Escolas coordenando a implementação
+                  pedagógica inovadora e o desenvolvimento do currículo de educação sustentável
                 </Typography>
               </Box>
             </Grid>
@@ -575,7 +728,7 @@ export default function LandingPage() {
                   Parceira Técnica Especializada
                 </Typography>
                 <Typography variant="body1" sx={{ mt: 3, color: "#888", lineHeight: 1.6 }}>
-                  Trazendo expertise técnica inédita em gestão de resíduos urbanos, oferecendo conhecimento prático e
+                  Trazendo expertise técnica em gestão de resíduos urbanos, oferecendo conhecimento prático e
                   suporte especializado para esta primeira experiência projeto de conscientização sustentável
                 </Typography>
               </Box>
@@ -604,8 +757,8 @@ export default function LandingPage() {
               }}
             >
               Juntos, criamos algo nunca visto antes em Goiânia: um projeto de conscientização onde o verdadeiro prêmio
-              é a transformação ambiental. Esta parceria  une conhecimento educacional e expertise técnica para
-              inaugurar uma nova era na consciência ecológica da nossa cidade.
+              é a transformação ambiental. Esta parceria une conhecimento educacional e expertise técnica para inaugurar
+              uma nova era na consciência ecológica da nossa cidade.
             </Typography>
           </Box>
         </Paper>
@@ -664,7 +817,7 @@ export default function LandingPage() {
                   icon: <Groups sx={{ fontSize: 52, color: "#4CAF50" }} />,
                   title: "Projeto Colaborativo",
                   description:
-                    "Promover a primeira projeto de conscientização onde projeto de conscientização significa colaborar com o meio ambiente, criando uma rede de escolas que se desafiam para ser mais sustentáveis.",
+                    " Onde o projeto de conscientização significa colaborar com o meio ambiente, criando uma rede de escolas que se desafiam para ser mais sustentáveis.",
                 },
                 {
                   icon: <TrendingUp sx={{ fontSize: 52, color: "#4CAF50" }} />,
@@ -834,7 +987,7 @@ export default function LandingPage() {
                 <Divider sx={{ bgcolor: "rgba(255,255,255,0.3)", mb: 3 }} />
                 <Typography variant="body1" sx={{ lineHeight: 1.7, position: "relative" }}>
                   Expandir o modelo projeto de conscientização para toda a cidade, criando a primeira rede de 'Escolas
-                  Campeãs da Sustentabilidade' e inspirando outras cidades a seguir o exemplo.
+                  Campeãs da Sustentabilidade' e inspirando outras cidades do Estado a seguir o exemplo.
                 </Typography>
               </Box>
             </Grid>
@@ -907,14 +1060,15 @@ export default function LandingPage() {
               fontSize: "1.2rem",
             }}
           >
-            Esta é a primeira vez que algo assim acontece em Goiânia! Acompanhe o desenvolvimento desta projeto de
-            conscientização e veja como cada escola está fazendo história na educação ambiental da nossa
-            cidade.
+             Acompanhe o desenvolvimento desta projeto de
+            conscientização e veja como cada escola está fazendo história na educação ambiental da nossa cidade.
           </Typography>
           <Box sx={{ display: "flex", gap: 3, justifyContent: "center", flexWrap: "wrap" }}>
             <Button
               variant="contained"
               size="large"
+              onClick={handleProgressClick}
+              disabled={isLoading}
               sx={{
                 backgroundColor: "#4CAF50",
                 color: "white",
@@ -930,10 +1084,14 @@ export default function LandingPage() {
                   transform: "translateY(-3px)",
                   boxShadow: "0 15px 40px rgba(76, 175, 80, 0.4)",
                 },
+                "&:disabled": {
+                  backgroundColor: "#A5D6A7",
+                  color: "white",
+                },
                 transition: "all 0.3s ease",
               }}
             >
-              Acompanhar o Projeto de Conscientização das Escolas
+              {isLoading ? "Carregando..." : "Acompanhar o Progresso da Eco Escolas"}
             </Button>
           </Box>
         </Box>
@@ -983,8 +1141,8 @@ export default function LandingPage() {
                 Projeto Eco Escolas
               </Typography>
               <Typography variant="body1" sx={{ lineHeight: 1.6, opacity: 0.9, mb: 2, fontSize: "1rem" }}>
-                Primeira edição do projeto de conscientização ambiental escolar da história de Goiânia - uma iniciativa nova e
-                inédita.
+                Primeira edição do projeto de conscientização ambiental escolar da história de Goiânia - uma iniciativa
+                nova.
               </Typography>
               <Box
                 sx={{
@@ -1004,7 +1162,7 @@ export default function LandingPage() {
             {/* Partners */}
             <Grid item xs={12} md={4}>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: "#A5D6A7" }}>
-                Realização 
+                Realização
               </Typography>
               <Box sx={{ mb: 2 }}>
                 <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
@@ -1071,8 +1229,8 @@ export default function LandingPage() {
             }}
           >
             &copy; {new Date().getFullYear()} Projeto Eco Escolas Goiânia - Todos os direitos reservados
-            <br />A primeira projeto de conscientização ambiental escolar de Goiânia - Uma iniciativa nova da
-            Secretaria Municipal de Educação em parceria com a Limpa Gyn
+            <br />A primeira projeto de conscientização ambiental escolar de Goiânia - Uma iniciativa nova da Secretaria
+            Municipal de Educação em parceria com a Limpa Gyn
           </Typography>
         </Container>
       </Box>
