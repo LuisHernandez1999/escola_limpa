@@ -21,6 +21,8 @@ import {
   Alert,
   Pagination,
   Stack,
+  Autocomplete, // Adicionado
+  TextField, // Adicionado
 } from "@mui/material"
 import {
   EmojiEvents,
@@ -35,6 +37,9 @@ import {
   LocalOfferOutlined,
 } from "@mui/icons-material"
 import Image from "next/image"
+// Assumindo que estas funções estão definidas em service_dados.js
+// Para fins de demonstração, estou usando dados mockados.
+// Você deve ter seu service_dados.js com as implementações reais.
 import { listarTotaisPorEscolaPaginado, getRankingEscolasPontos } from "@/service/service_dados"
 
 // Componente para o relógio em tempo real
@@ -47,7 +52,6 @@ function LiveClock() {
     const timer = setInterval(() => {
       setTime(dayjs())
     }, 1000)
-
     return () => clearInterval(timer)
   }, [])
 
@@ -141,6 +145,13 @@ export default function SchoolProgress() {
   const [totalPages, setTotalPages] = useState(1)
   const [pageSize] = useState(10)
 
+  // Estados para busca e filtragem
+  const [topSchoolsSearchTerm, setTopSchoolsSearchTerm] = useState("")
+  const [filteredTopSchools, setFilteredTopSchools] = useState([])
+
+  const [allSchoolsSearchTerm, setAllSchoolsSearchTerm] = useState("")
+  const [filteredAllSchoolsPaginated, setFilteredAllSchoolsPaginated] = useState([])
+
   // Carregar dados da API
   useEffect(() => {
     const loadData = async () => {
@@ -153,14 +164,13 @@ export default function SchoolProgress() {
         console.log("📡 [PAGE] Carregando ranking das escolas...")
         const rankingResult = await getRankingEscolasPontos()
         console.log("🏆 [PAGE] Resultado do ranking:", rankingResult)
-
         if (rankingResult.top_10_escolas) {
           setTopSchools(rankingResult.top_10_escolas)
+          setFilteredTopSchools(rankingResult.top_10_escolas) // Inicializa a lista filtrada
         }
         if (rankingResult.bottom_5_escolas) {
           setBottomSchools(rankingResult.bottom_5_escolas)
         }
-
         console.log("✅ [PAGE] Ranking carregado com sucesso!")
       } catch (err) {
         console.error("💥 [PAGE] Erro durante o carregamento do ranking:", err)
@@ -169,9 +179,19 @@ export default function SchoolProgress() {
         setLoading(false)
       }
     }
-
     loadData()
   }, [])
+
+  // Efeito para filtrar topSchools quando o termo de busca muda
+  useEffect(() => {
+    if (topSchoolsSearchTerm) {
+      setFilteredTopSchools(
+        topSchools.filter((school) => school.escola_nome.toLowerCase().includes(topSchoolsSearchTerm.toLowerCase())),
+      )
+    } else {
+      setFilteredTopSchools(topSchools)
+    }
+  }, [topSchoolsSearchTerm, topSchools])
 
   // Carregar dados paginados
   useEffect(() => {
@@ -180,27 +200,39 @@ export default function SchoolProgress() {
       try {
         const listResult = await listarTotaisPorEscolaPaginado(currentPage, pageSize)
         console.log("📋 [PAGE] Resultado da lista paginada:", listResult)
-
         if (listResult.erro) {
           throw new Error(listResult.erro)
         }
-
         if (listResult.sucesso) {
           setAllSchools(listResult.resultados)
+          // Aplica o filtro de busca imediatamente após buscar os dados paginados
+          const currentFiltered = listResult.resultados.filter((school) =>
+            school.nomeEscola.toLowerCase().includes(allSchoolsSearchTerm.toLowerCase()),
+          )
+          setFilteredAllSchoolsPaginated(currentFiltered)
           setTotalPages(Math.ceil(listResult.totalEscolas / pageSize))
         }
-
         console.log("✅ [PAGE] Dados paginados carregados com sucesso!")
       } catch (err) {
         console.error("💥 [PAGE] Erro durante o carregamento dos dados paginados:", err)
         setError(err.message)
       }
     }
-
     if (!loading) {
       loadPaginatedData()
     }
-  }, [currentPage, pageSize, loading])
+  }, [currentPage, pageSize, loading, allSchoolsSearchTerm]) // allSchoolsSearchTerm como dependência
+
+  // Efeito para filtrar allSchools (na página atual) quando o termo de busca muda
+  useEffect(() => {
+    if (allSchoolsSearchTerm) {
+      setFilteredAllSchoolsPaginated(
+        allSchools.filter((school) => school.nomeEscola.toLowerCase().includes(allSchoolsSearchTerm.toLowerCase())),
+      )
+    } else {
+      setFilteredAllSchoolsPaginated(allSchools)
+    }
+  }, [allSchoolsSearchTerm, allSchools])
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value)
@@ -303,7 +335,7 @@ export default function SchoolProgress() {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundImage: `url('/criancada.jpg')`,
+          backgroundImage: `url('/criancada.png')`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundAttachment: "fixed",
@@ -312,7 +344,6 @@ export default function SchoolProgress() {
           zIndex: -1,
         }}
       />
-
       {/* Header */}
       <AppBar
         position="static"
@@ -376,7 +407,6 @@ export default function SchoolProgress() {
           <LiveClock />
         </Toolbar>
       </AppBar>
-
       <Container maxWidth="xl" sx={{ flexGrow: 1, py: 4, pb: 8 }}>
         {/* Tabela Top 10 Escolas com Mais Pontos - VERDE */}
         <Paper
@@ -402,9 +432,49 @@ export default function SchoolProgress() {
                 letterSpacing: "0.02em",
               }}
             >
-              TOP 10 ESCOLAS - MAIORES PONTUAÇÕES
+              RANKING ESCOLAR  - POSICIONAMENTO GERAL 
             </Typography>
           </Box>
+          {/* Input de busca para Top 10 Escolas */}
+          <Autocomplete
+            freeSolo
+            options={topSchools.map((school) => school.escola_nome)}
+            onInputChange={(event, newInputValue) => {
+              setTopSchoolsSearchTerm(newInputValue)
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Buscar escola no Top 10"
+                variant="outlined"
+                fullWidth
+                sx={{
+                  mb: 3,
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "12px", // Mais arredondado
+                    "& fieldset": {
+                      borderColor: "#E0E0E0", // Borda mais clara
+                      transition: "border-color 0.3s ease, box-shadow 0.3s ease",
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "#A5D6A7", // Verde suave no hover
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "#81C784", // Verde um pouco mais forte no focus
+                      boxShadow: "0 2px 8px rgba(76, 175, 80, 0.1)", // Sombra sutil no focus
+                    },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "#757575", // Cor do label mais suave
+                  },
+                  "& .MuiInputLabel-root.Mui-focused": {
+                    color: "#4CAF50", // Verde no label focado
+                  },
+                }}
+              />
+            )}
+            sx={{ mb: 3 }}
+          />
           <TableContainer
             sx={{
               borderRadius: 2,
@@ -450,7 +520,7 @@ export default function SchoolProgress() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {topSchools.map((school, index) => (
+                {filteredTopSchools.map((school, index) => (
                   <TableRow
                     key={index}
                     sx={{
@@ -500,7 +570,6 @@ export default function SchoolProgress() {
             </Table>
           </TableContainer>
         </Paper>
-
         {/* Componente com Quantidades das 5 Escolas que Precisam Crescer - AZUL */}
         <Paper
           elevation={6}
@@ -626,7 +695,6 @@ export default function SchoolProgress() {
             </Table>
           </TableContainer>
         </Paper>
-
         {/* Tabela de Novos Cadastros com Paginação - AMARELO */}
         <Paper
           elevation={6}
@@ -653,6 +721,46 @@ export default function SchoolProgress() {
               NOVOS CADASTROS DE FORMULÁRIOS
             </Typography>
           </Box>
+          {/* Input de busca para Novos Cadastros */}
+          <Autocomplete
+            freeSolo
+            options={allSchools.map((school) => school.nomeEscola)}
+            onInputChange={(event, newInputValue) => {
+              setAllSchoolsSearchTerm(newInputValue)
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Buscar escola nos cadastros"
+                variant="outlined"
+                fullWidth
+                sx={{
+                  mb: 3,
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "12px", // Mais arredondado
+                    "& fieldset": {
+                      borderColor: "#E0E0E0", // Borda mais clara
+                      transition: "border-color 0.3s ease, box-shadow 0.3s ease",
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "#A5D6A7", // Verde suave no hover
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "#81C784", // Verde um pouco mais forte no focus
+                      boxShadow: "0 2px 8px rgba(76, 175, 80, 0.1)", // Sombra sutil no focus
+                    },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "#757575", // Cor do label mais suave
+                  },
+                  "& .MuiInputLabel-root.Mui-focused": {
+                    color: "#4CAF50", // Verde no label focado
+                  },
+                }}
+              />
+            )}
+            sx={{ mb: 3 }}
+          />
           <TableContainer
             sx={{
               borderRadius: 2,
@@ -707,7 +815,7 @@ export default function SchoolProgress() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {allSchools.map((school, index) => {
+                {filteredAllSchoolsPaginated.map((school, index) => {
                   // Mapear dados para o formato da tabela antiga
                   const materiais = []
                   if (school.totalPlastico > 0) materiais.push("Plástico")
@@ -828,7 +936,6 @@ export default function SchoolProgress() {
               </TableBody>
             </Table>
           </TableContainer>
-
           {/* Paginação */}
           <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
             <Stack spacing={2}>
@@ -859,13 +966,12 @@ export default function SchoolProgress() {
                   fontSize: "0.9rem",
                 }}
               >
-                Página {currentPage} de {totalPages} - Mostrando {allSchools.length} escolas
+                Página {currentPage} de {totalPages} - Mostrando {filteredAllSchoolsPaginated.length} escolas
               </Typography>
             </Stack>
           </Box>
         </Paper>
       </Container>
-
       {/* Footer */}
       <AppBar
         position="static"
