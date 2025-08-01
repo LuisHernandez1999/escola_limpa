@@ -153,41 +153,6 @@ export default function RegisterPage() {
           </Box>
           <Box component="form" onSubmit={handleRegister} sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <TextField
-              label="Nome Completo"
-              type="text"
-              variant="outlined"
-              fullWidth
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 4, // Bordas mais arredondadas
-                  backgroundColor: "rgba(255,255,255,0.8)", // Fundo levemente transparente
-                  "& fieldset": {
-                    borderColor: "#4CAF50",
-                    transition: "border-color 0.3s ease, box-shadow 0.3s ease",
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "#2E7D32",
-                    boxShadow: "0 0 10px rgba(76, 175, 80, 0.3)",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#1B5E20",
-                    borderWidth: "4px", // Borda super grossa e destacada no foco
-                    boxShadow: "0 0 15px rgba(27, 94, 32, 0.5)",
-                  },
-                },
-                "& .MuiInputLabel-root": {
-                  color: "#4CAF50",
-                  fontWeight: 700, // Mais negrito
-                  "&.Mui-focused": {
-                    color: "#1B5E20",
-                  },
-                },
-              }}
-            />
-            <TextField
               label="Email"
               type="email"
               variant="outlined"
@@ -283,26 +248,8 @@ export default function RegisterPage() {
                 },
               }}
             >
-              Cadastrar Agora!
+           Entrar!
             </Button>
-          </Box>
-          <Box sx={{ mt: 5.5 }}>
-            <Typography variant="body1" sx={{ color: "#666", fontSize: "1.15rem" }}>
-              Já tem uma conta?{" "}
-              <Link
-                href="/pages/login/login_page" // Rota correta para a página de login
-                variant="body1"
-                sx={{
-                  color: "#1B5E20", // Cor forte para o link
-                  fontWeight: 800, // Mais negrito
-                  textDecoration: "none",
-                  "&:hover": { textDecoration: "underline", color: "#2E7D32" },
-                  transition: "color 0.3s ease",
-                }}
-              >
-                Faça login aqui
-              </Link>
-            </Typography>
           </Box>
         </Paper>
       </Container>

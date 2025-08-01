@@ -21,8 +21,11 @@ import {
   Alert,
   Pagination,
   Stack,
-  Autocomplete, // Adicionado
-  TextField, // Adicionado
+  Autocomplete,
+  TextField,
+  Modal,
+  Button,
+  Grid, // Adicionado para layout
 } from "@mui/material"
 import {
   EmojiEvents,
@@ -35,8 +38,14 @@ import {
   BatteryChargingFullOutlined,
   PhoneAndroidOutlined,
   LocalOfferOutlined,
+  Close as CloseIcon, // Adicionado para o botão de fechar
+  Star as StarIcon, // Ícone para pontos
+  DateRange as DateRangeIcon, // Ícone para data
+  Category as CategoryIcon, // Ícone genérico para materiais
+  Storage as StorageIcon, // Ícone para volume
 } from "@mui/icons-material"
 import Image from "next/image"
+
 // Assumindo que estas funções estão definidas em service_dados.js
 // Para fins de demonstração, estou usando dados mockados.
 // Você deve ter seu service_dados.js com as implementações reais.
@@ -46,7 +55,6 @@ import { listarTotaisPorEscolaPaginado, getRankingEscolasPontos } from "@/servic
 function LiveClock() {
   const [time, setTime] = useState(dayjs())
   const [isClient, setIsClient] = useState(false)
-
   useEffect(() => {
     setIsClient(true)
     const timer = setInterval(() => {
@@ -54,7 +62,6 @@ function LiveClock() {
     }, 1000)
     return () => clearInterval(timer)
   }, [])
-
   if (!isClient) {
     return (
       <Box
@@ -93,7 +100,6 @@ function LiveClock() {
       </Box>
     )
   }
-
   return (
     <Box
       sx={{
@@ -139,18 +145,32 @@ export default function SchoolProgress() {
   const [allSchools, setAllSchools] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-
   // Estados para paginação
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [pageSize] = useState(10)
-
   // Estados para busca e filtragem
   const [topSchoolsSearchTerm, setTopSchoolsSearchTerm] = useState("")
   const [filteredTopSchools, setFilteredTopSchools] = useState([])
-
   const [allSchoolsSearchTerm, setAllSchoolsSearchTerm] = useState("")
   const [filteredAllSchoolsPaginated, setFilteredAllSchoolsPaginated] = useState([])
+
+  // Estados para o modal
+  const [openModal, setOpenModal] = useState(false)
+  const [selectedItem, setSelectedItem] = useState(null)
+  const [modalType, setModalType] = useState("") // "topSchools" or "allSchools"
+
+  const handleOpenModal = (item, type) => {
+    setSelectedItem(item)
+    setModalType(type)
+    setOpenModal(true)
+  }
+
+  const handleCloseModal = () => {
+    setOpenModal(false)
+    setSelectedItem(null)
+    setModalType("")
+  }
 
   // Carregar dados da API
   useEffect(() => {
@@ -159,7 +179,6 @@ export default function SchoolProgress() {
       try {
         setLoading(true)
         setError(null)
-
         // Carregar ranking das escolas
         console.log("📡 [PAGE] Carregando ranking das escolas...")
         const rankingResult = await getRankingEscolasPontos()
@@ -432,7 +451,7 @@ export default function SchoolProgress() {
                 letterSpacing: "0.02em",
               }}
             >
-              RANKING ESCOLAR  - POSICIONAMENTO GERAL 
+              RANKING ESCOLAR - POSICIONAMENTO GERAL
             </Typography>
           </Box>
           {/* Input de busca para Top 10 Escolas */}
@@ -445,7 +464,7 @@ export default function SchoolProgress() {
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="Buscar escola no Top 10"
+                label="Buscar escola"
                 variant="outlined"
                 fullWidth
                 sx={{
@@ -523,6 +542,7 @@ export default function SchoolProgress() {
                 {filteredTopSchools.map((school, index) => (
                   <TableRow
                     key={index}
+                    onClick={() => handleOpenModal(school, "topSchools")}
                     sx={{
                       "&:nth-of-type(odd)": {
                         bgcolor: index < 3 ? `${getPositionColor(index + 1)}10` : "#4CAF5010",
@@ -531,6 +551,7 @@ export default function SchoolProgress() {
                         bgcolor: index < 3 ? `${getPositionColor(index + 1)}20` : "#4CAF5020",
                         transform: "scale(1.01)",
                         transition: "all 0.2s ease-in-out",
+                        cursor: "pointer",
                       },
                     }}
                   >
@@ -822,22 +843,20 @@ export default function SchoolProgress() {
                   if (school.totalPapel > 0) materiais.push("Papel")
                   if (school.totalAluminio > 0) materiais.push("Alumínio")
                   if (school.totalEletronico > 0) materiais.push("Eletrônico")
-
                   // Determinar volume baseado nos totais
                   let volume = "Bag Vazio"
                   if (school.totalCheio > 0) volume = "Bag Cheio"
                   else if (school.totalSemiCheio > 0) volume = "Bag Semi Cheio"
-
                   // Formatar data se disponível
                   let dataFormatada = "28/01/2025"
                   if (school.dataMaisRecente) {
                     const data = new Date(school.dataMaisRecente)
                     dataFormatada = data.toLocaleDateString("pt-BR")
                   }
-
                   return (
                     <TableRow
                       key={index}
+                      onClick={() => handleOpenModal(school, "allSchools")}
                       sx={{
                         "&:nth-of-type(odd)": {
                           bgcolor: "#2196F310",
@@ -846,6 +865,7 @@ export default function SchoolProgress() {
                           bgcolor: "#2196F320",
                           transform: "scale(1.01)",
                           transition: "all 0.2s ease-in-out",
+                          cursor: "pointer",
                         },
                       }}
                     >
@@ -1019,6 +1039,202 @@ export default function SchoolProgress() {
           </Typography>
         </Toolbar>
       </AppBar>
+
+      {/* Modal de Visualização */}
+      <Modal
+        open={openModal}
+        onClose={handleCloseModal}
+        aria-labelledby="modal-title"
+        aria-describedby="modal-description"
+      >
+        <Paper
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: { xs: "90%", sm: 500 },
+            maxWidth: "90vw",
+            maxHeight: "90vh",
+            overflowY: "auto",
+            p: 4,
+            borderRadius: 3,
+            boxShadow: "0 12px 24px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05)",
+            backgroundColor: "rgba(255, 255, 255, 0.98)",
+            backdropFilter: "blur(5px)",
+            WebkitBackdropFilter: "blur(5px)",
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+            <Typography id="modal-title" variant="h5" component="h2" sx={{ color: "#2C3E50", fontWeight: 600 }}>
+              Detalhes da {modalType === "topSchools" ? "Escola" : "Coleta"}
+            </Typography>
+            <Button onClick={handleCloseModal} sx={{ minWidth: 0, p: 0.5, color: "#777" }}>
+              <CloseIcon />
+            </Button>
+          </Box>
+          <Divider sx={{ mb: 2 }} />
+
+          {selectedItem && modalType === "topSchools" && (
+            <Grid container spacing={2} id="modal-description">
+              <Grid item xs={12}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <School sx={{ color: "#4CAF50", fontSize: 24 }} />
+                  <Typography variant="body1" sx={{ fontWeight: 500, color: "#333" }}>
+                    Nome da Escola:
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: "#555" }}>
+                    {selectedItem.escola_nome}
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <StarIcon sx={{ color: "#FFD700", fontSize: 24 }} />
+                  <Typography variant="body1" sx={{ fontWeight: 500, color: "#333" }}>
+                    Pontos:
+                  </Typography>
+                  <Typography variant="h6" sx={{ color: "#4CAF50", fontWeight: "bold" }}>
+                    {selectedItem.pontos.toLocaleString()}
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          )}
+
+          {selectedItem && modalType === "allSchools" && (
+            <Grid container spacing={2} id="modal-description">
+              <Grid item xs={12}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <School sx={{ color: "#4CAF50", fontSize: 24 }} />
+                  <Typography variant="body1" sx={{ fontWeight: 500, color: "#333" }}>
+                    Nome da Escola:
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: "#555" }}>
+                    {selectedItem.nomeEscola}
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <DateRangeIcon sx={{ color: "#666", fontSize: 24 }} />
+                  <Typography variant="body1" sx={{ fontWeight: 500, color: "#333" }}>
+                    Data da Coleta:
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: "#555" }}>
+                    {selectedItem.dataMaisRecente
+                      ? new Date(selectedItem.dataMaisRecente).toLocaleDateString("pt-BR")
+                      : "N/A"}
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                  <CategoryIcon sx={{ color: "#777", fontSize: 24 }} />
+                  <Typography variant="body1" sx={{ fontWeight: 500, color: "#333" }}>
+                    Materiais Coletados:
+                  </Typography>
+                </Box>
+                <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", pl: 4 }}>
+                  {selectedItem.totalPlastico > 0 && (
+                    <Chip
+                      icon={<RecyclingOutlined />}
+                      label={`Plástico: ${selectedItem.totalPlastico}`}
+                      sx={{ bgcolor: "#4CAF5015", color: "#4CAF50", fontSize: "0.85rem", fontWeight: 500 }}
+                    />
+                  )}
+                  {selectedItem.totalPapel > 0 && (
+                    <Chip
+                      icon={<DescriptionOutlined />}
+                      label={`Papel: ${selectedItem.totalPapel}`}
+                      sx={{ bgcolor: "#2196F315", color: "#2196F3", fontSize: "0.85rem", fontWeight: 500 }}
+                    />
+                  )}
+                  {selectedItem.totalAluminio > 0 && (
+                    <Chip
+                      icon={<BatteryChargingFullOutlined />}
+                      label={`Alumínio: ${selectedItem.totalAluminio}`}
+                      sx={{ bgcolor: "#FF980015", color: "#FF9800", fontSize: "0.85rem", fontWeight: 500 }}
+                    />
+                  )}
+                  {selectedItem.totalEletronico > 0 && (
+                    <Chip
+                      icon={<PhoneAndroidOutlined />}
+                      label={`Eletrônico: ${selectedItem.totalEletronico}`}
+                      sx={{ bgcolor: "#9C27B015", color: "#9C27B0", fontSize: "0.85rem", fontWeight: 500 }}
+                    />
+                  )}
+                  {selectedItem.totalPlastico === 0 &&
+                    selectedItem.totalPapel === 0 &&
+                    selectedItem.totalAluminio === 0 &&
+                    selectedItem.totalEletronico === 0 && (
+                      <Chip
+                        label="Sem materiais"
+                        sx={{ bgcolor: "#9E9E9E15", color: "#9E9E9E", fontSize: "0.85rem", fontWeight: 500 }}
+                      />
+                    )}
+                </Box>
+              </Grid>
+              <Grid item xs={12}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <StorageIcon sx={{ color: "#777", fontSize: 24 }} />
+                  <Typography variant="body1" sx={{ fontWeight: 500, color: "#333" }}>
+                    Volume do Bag:
+                  </Typography>
+                  <Chip
+                    label={
+                      selectedItem.totalCheio > 0
+                        ? "Bag Cheio"
+                        : selectedItem.totalSemiCheio > 0
+                          ? "Bag Semi Cheio"
+                          : "Bag Vazio"
+                    }
+                    sx={{
+                      bgcolor: `${getVolumeColor(
+                        selectedItem.totalCheio > 0
+                          ? "Bag Cheio"
+                          : selectedItem.totalSemiCheio > 0
+                            ? "Bag Semi Cheio"
+                            : "Bag Vazio",
+                      )}15`,
+                      color: getVolumeColor(
+                        selectedItem.totalCheio > 0
+                          ? "Bag Cheio"
+                          : selectedItem.totalSemiCheio > 0
+                            ? "Bag Semi Cheio"
+                            : "Bag Vazio",
+                      ),
+                      fontWeight: "bold",
+                      fontSize: "0.9rem",
+                    }}
+                  />
+                </Box>
+              </Grid>
+            </Grid>
+          )}
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
+            <Button
+              onClick={handleCloseModal}
+              variant="contained"
+              startIcon={<CloseIcon />}
+              sx={{
+                bgcolor: "#4CAF50",
+                "&:hover": { bgcolor: "#388E3C" },
+                borderRadius: "8px",
+                px: 3,
+                py: 1.2,
+                fontSize: "1rem",
+                fontWeight: 600,
+              }}
+            >
+              Fechar
+            </Button>
+          </Box>
+        </Paper>
+      </Modal>
     </Box>
   )
 }

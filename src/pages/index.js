@@ -16,6 +16,9 @@ import {
   Fab,
   CircularProgress,
   Backdrop,
+  MobileStepper, // Adicionado para os pontos do carrossel
+  Fade, // Adicionado para transições suaves
+  useTheme, // Adicionado para o tema do MobileStepper
 } from "@mui/material"
 import Image from "next/image"
 import Recycling from "@mui/icons-material/Recycling"
@@ -27,6 +30,8 @@ import MenuBook from "@mui/icons-material/MenuBook"
 import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown"
 import EmojiEvents from "@mui/icons-material/EmojiEvents"
 import WorkspacePremium from "@mui/icons-material/WorkspacePremium"
+import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft" // Adicionado para navegação do carrossel
+import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight" // Adicionado para navegação do carrossel
 
 // Componente de Loading
 const LoadingScreen = ({ open }) => (
@@ -92,7 +97,7 @@ const LoadingScreen = ({ open }) => (
                 transform: "rotate(0deg)",
               },
               "100%": {
-                transform: "rotate(360deg)",
+                transform: "360deg",
               },
             },
           }}
@@ -167,6 +172,36 @@ export default function LandingPage() {
   const [isVisible, setIsVisible] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const theme = useTheme() // Para MobileStepper
+  const [activeStep, setActiveStep] = useState(0) // Para o carrossel
+
+  const carouselItems = [
+    {
+      image: "/kids.jpg",
+      alt: "Crianças aprendendo sobre reciclagem",
+      text: "Nossas crianças são o futuro do planeta. O projeto Eco Escolas as capacita a serem agentes de mudança, ensinando a importância da reciclagem e do cuidado com o meio ambiente desde cedo.",
+    },
+    {
+      image: "/kids3.jpg",
+      alt: "Crianças participando de educação ambiental",
+      text: "Através de atividades lúdicas e educativas, transformamos o aprendizado em uma aventura. As escolas se tornam laboratórios de sustentabilidade, onde cada criança descobre o poder de suas ações.",
+    },
+    {
+      image: "/kids4.jpeg",
+      alt: "Crianças plantando árvores",
+      text: "Juntos, construímos um futuro mais verde para Goiânia. O engajamento das escolas e a participação ativa dos alunos são a chave para o sucesso do Eco Escolas, criando um legado de consciência ambiental.",
+    },
+  ]
+
+  const maxSteps = carouselItems.length
+
+  const handleNext = () => {
+    setActiveStep((prevActiveStep) => (prevActiveStep + 1) % maxSteps)
+  }
+
+  const handleBack = () => {
+    setActiveStep((prevActiveStep) => (prevActiveStep - 1 + maxSteps) % maxSteps)
+  }
 
   useEffect(() => {
     setIsVisible(true)
@@ -392,7 +427,7 @@ export default function LandingPage() {
             O QUE É O
             <br />
             <Box component="span" sx={{ color: "#4CAF50" }}>
-              PROJETO ECO ESCOLAS
+              PROJETO ECO ESCOLAS?
             </Box>
             <br />
           </Typography>
@@ -417,10 +452,104 @@ export default function LandingPage() {
               fontSize: { xs: "1.1rem", md: "1.3rem" },
             }}
           >
-            Ação inovadora que traz nova abordagem à coleta seletiva, promovendo a conscientização, a transformação de
+            O projeto Esco Escolas é uma  ação inovadora que traz nova abordagem à coleta seletiva, promovendo a conscientização, a transformação de
             atitudes e o despertar do senso de responsabilidade social e ambiental.
           </Typography>
         </Box>
+
+        {/* NOVA SEÇÃO: Carrossel de Imagens com Textos */}
+        <Paper
+          sx={{
+            background: "rgba(255, 255, 255, 0.98)",
+            borderRadius: 6,
+            p: { xs: 4, md: 8 },
+            my: { xs: 6, md: 10 },
+            boxShadow: "0 12px 40px rgba(0,0,0,0.08)",
+            border: "1px solid rgba(76, 175, 80, 0.1)",
+            color: "#2E2E2E",
+            position: "relative",
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <Typography
+            variant="h2"
+            sx={{
+              fontSize: { xs: "2rem", md: "3rem" },
+              fontWeight: 700,
+              mb: 6,
+              color: "#1B5E20",
+              fontFamily: "Inter, sans-serif",
+              textAlign: "center",
+            }}
+          >
+              Explicando um pouco mais ...
+          </Typography>
+          <Box sx={{ width: "100%", maxWidth: 800, flexGrow: 1, position: "relative" }}>
+            <Fade in={true} key={activeStep} timeout={500}>
+              <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, alignItems: "center", gap: 4 }}>
+                <Box sx={{ flexShrink: 0, width: { xs: "100%", md: "50%" }, textAlign: "center" }}>
+                  <Image
+                    src={carouselItems[activeStep].image || "/placeholder.svg"}
+                    alt={carouselItems[activeStep].alt}
+                    width={600}
+                    height={400}
+                    style={{
+                      objectFit: "contain",
+                      borderRadius: "12px",
+                      maxWidth: "100%",
+                      height: "auto",
+                      boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
+                    }}
+                  />
+                </Box>
+                <Box sx={{ flexGrow: 1, width: { xs: "100%", md: "50%" }, textAlign: { xs: "center", md: "left" } }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color: "#424242",
+                      lineHeight: 1.6,
+                      fontSize: { xs: "1.1rem", md: "1.3rem" },
+                      fontWeight: 400,
+                    }}
+                  >
+                    {carouselItems[activeStep].text}
+                  </Typography>
+                </Box>
+              </Box>
+            </Fade>
+          </Box>
+          <MobileStepper
+            steps={maxSteps}
+            position="static"
+            activeStep={activeStep}
+            sx={{
+              maxWidth: 800,
+              width: "100%",
+              mt: 4,
+              background: "transparent",
+              "& .MuiMobileStepper-dotActive": {
+                backgroundColor: "#4CAF50",
+              },
+            }}
+            nextButton={
+              <Button size="small" onClick={handleNext} disabled={activeStep === maxSteps - 1}>
+                Próximo
+                {theme.direction === "rtl" ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
+              </Button>
+            }
+            backButton={
+              <Button size="small" onClick={handleBack} disabled={activeStep === 0}>
+                {theme.direction === "rtl" ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
+                Anterior
+              </Button>
+            }
+          />
+        </Paper>
+        {/* FIM DA NOVA SEÇÃO: Carrossel de Imagens com Textos */}
+
         {/* Competition Section - NOVA */}
         <Paper
           sx={{
@@ -1130,30 +1259,7 @@ export default function LandingPage() {
             >
               {isLoading ? "Carregando..." : "Acompanhar o Progresso da Eco Escolas"}
             </Button>
-            <Button
-              variant="outlined"
-              size="large"
-              onClick={handleRegisterClick} // Alterado para handleRegisterClick
-              sx={{
-                borderColor: "#4CAF50",
-                color: "#4CAF50",
-                px: 10,
-                py: 4,
-                fontSize: "1.3rem",
-                fontWeight: 600,
-                borderRadius: 4,
-                boxShadow: "0 5px 15px rgba(76, 175, 80, 0.1)",
-                textTransform: "none",
-                "&:hover": {
-                  backgroundColor: "rgba(76, 175, 80, 0.05)",
-                  transform: "translateY(-3px)",
-                  boxShadow: "0 10px 25px rgba(76, 175, 80, 0.2)",
-                },
-                transition: "all 0.3s ease",
-              }}
-            >
-              Cadastre-se {/* Alterado para Cadastre-se */}
-            </Button>
+            
           </Box>
         </Box>
       </Container>
