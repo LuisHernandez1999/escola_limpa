@@ -2,8 +2,8 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import {
-  AppBar, // Re-adicionado
-  Toolbar, // Re-adicionado
+  AppBar,
+  Toolbar,
   Typography,
   Container,
   Box,
@@ -16,9 +16,10 @@ import {
   Fab,
   CircularProgress,
   Backdrop,
-  MobileStepper, // Adicionado para os pontos do carrossel
-  Fade, // Adicionado para transições suaves
-  useTheme, // Adicionado para o tema do MobileStepper
+  MobileStepper,
+  Fade,
+  useTheme,
+  Chip,
 } from "@mui/material"
 import Image from "next/image"
 import Recycling from "@mui/icons-material/Recycling"
@@ -28,10 +29,15 @@ import Groups from "@mui/icons-material/Groups"
 import InsertChart from "@mui/icons-material/InsertChart"
 import MenuBook from "@mui/icons-material/MenuBook"
 import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown"
-import EmojiEvents from "@mui/icons-material/EmojiEvents"
+import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft"
+import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight"
+import Tablet from "@mui/icons-material/Tablet"
+import LocalDrink from "@mui/icons-material/LocalDrink"
+import Battery20 from "@mui/icons-material/Battery20"
+import Inventory from "@mui/icons-material/Inventory"
 import WorkspacePremium from "@mui/icons-material/WorkspacePremium"
-import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft" // Adicionado para navegação do carrossel
-import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight" // Adicionado para navegação do carrossel
+import AutoAwesome from "@mui/icons-material/AutoAwesome"
+import TrendingUpIcon from "@mui/icons-material/TrendingUp"
 
 // Componente de Loading
 const LoadingScreen = ({ open }) => (
@@ -55,7 +61,6 @@ const LoadingScreen = ({ open }) => (
         gap: 4,
       }}
     >
-      {/* Logo animado */}
       <Box
         sx={{
           position: "relative",
@@ -77,14 +82,13 @@ const LoadingScreen = ({ open }) => (
         }}
       >
         <Image
-          src="/escolas_logo.jpeg" // Restaurado para .jpeg
+          src="/escolas_logo.jpeg"
           alt="Eco Escolas Logo"
           width={120}
           height={90}
           style={{ objectFit: "contain" }}
         />
       </Box>
-      {/* Spinner customizado */}
       <Box sx={{ position: "relative", display: "inline-flex" }}>
         <CircularProgress
           size={60}
@@ -117,7 +121,6 @@ const LoadingScreen = ({ open }) => (
           <Recycling sx={{ fontSize: 24, color: "#E8F5E9" }} />
         </Box>
       </Box>
-      {/* Texto de carregamento */}
       <Box>
         <Typography
           variant="h5"
@@ -141,7 +144,6 @@ const LoadingScreen = ({ open }) => (
           Preparando os dados mais recentes do projeto EcoEscolas...
         </Typography>
       </Box>
-      {/* Indicadores de progresso animados */}
       <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
         {[0, 1, 2].map((index) => (
           <Box
@@ -172,8 +174,8 @@ export default function LandingPage() {
   const [isVisible, setIsVisible] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-  const theme = useTheme() // Para MobileStepper
-  const [activeStep, setActiveStep] = useState(0) // Para o carrossel
+  const theme = useTheme()
+  const [activeStep, setActiveStep] = useState(0)
 
   const carouselItems = [
     {
@@ -216,7 +218,6 @@ export default function LandingPage() {
 
   const handleProgressClick = async () => {
     setIsLoading(true)
-    // Simula um pequeno delay para mostrar o loading
     await new Promise((resolve) => setTimeout(resolve, 1500))
     try {
       router.push("/progresso_escolas/progresso")
@@ -227,7 +228,7 @@ export default function LandingPage() {
   }
 
   const handleRegisterClick = () => {
-    router.push("/cadastro/cadastro_page") // Caminho atualizado
+    router.push("/cadastro/cadastro_page")
   }
 
   return (
@@ -248,8 +249,8 @@ export default function LandingPage() {
         },
       }}
     >
-      {/* Loading Screen */}
       <LoadingScreen open={isLoading} />
+
       {/* Decorative Elements */}
       <Box
         sx={{
@@ -275,6 +276,7 @@ export default function LandingPage() {
           zIndex: 0,
         }}
       />
+
       {/* Floating Action Button */}
       <Fab
         onClick={scrollToProgress}
@@ -295,7 +297,8 @@ export default function LandingPage() {
       >
         <KeyboardArrowDown />
       </Fab>
-      {/* Enhanced Elegant Header - RESTAURADO */}
+
+      {/* Enhanced Elegant Header */}
       <AppBar
         position="static"
         elevation={0}
@@ -308,7 +311,6 @@ export default function LandingPage() {
           overflow: "hidden",
         }}
       >
-        {/* Header decorative elements */}
         <Box
           sx={{
             position: "absolute",
@@ -335,7 +337,6 @@ export default function LandingPage() {
         />
         <Toolbar sx={{ py: 4, justifyContent: "center", position: "relative", zIndex: 1 }}>
           <Box sx={{ textAlign: "center", maxWidth: "1200px" }}>
-            {/* Novo badge de destaque */}
             <Typography
               variant="h2"
               sx={{
@@ -390,6 +391,7 @@ export default function LandingPage() {
           </Box>
         </Toolbar>
       </AppBar>
+
       <Container
         maxWidth="lg"
         sx={{
@@ -433,7 +435,7 @@ export default function LandingPage() {
           </Typography>
           <Box sx={{ mb: 6 }}>
             <Image
-              src="/escolas_logo.jpeg" // Restaurado para .jpeg
+              src="/escolas_logo.jpeg"
               alt="Eco Escolas Logo"
               width={400}
               height={300}
@@ -452,12 +454,12 @@ export default function LandingPage() {
               fontSize: { xs: "1.1rem", md: "1.3rem" },
             }}
           >
-            O projeto Esco Escolas é uma  ação inovadora que traz nova abordagem à coleta seletiva, promovendo a conscientização, a transformação de
-            atitudes e o despertar do senso de responsabilidade social e ambiental.
+            O projeto Esco Escolas é uma ação inovadora que traz nova abordagem à coleta seletiva, promovendo a
+            conscientização, a transformação de atitudes e o despertar do senso de responsabilidade social e ambiental.
           </Typography>
         </Box>
 
-        {/* NOVA SEÇÃO: Carrossel de Imagens com Textos */}
+        {/* Carrossel de Imagens com Textos */}
         <Paper
           sx={{
             background: "rgba(255, 255, 255, 0.98)",
@@ -485,7 +487,7 @@ export default function LandingPage() {
               textAlign: "center",
             }}
           >
-              Explicando um pouco mais ...
+            Explicando um pouco mais ...
           </Typography>
           <Box sx={{ width: "100%", maxWidth: 800, flexGrow: 1, position: "relative" }}>
             <Fade in={true} key={activeStep} timeout={500}>
@@ -548,92 +550,709 @@ export default function LandingPage() {
             }
           />
         </Paper>
-        {/* FIM DA NOVA SEÇÃO: Carrossel de Imagens com Textos */}
 
-        {/* Competition Section - NOVA */}
+        {/* SEÇÃO MELHORADA: Como Funciona o Projeto */}
         <Paper
           sx={{
-            background: "rgba(255, 255, 255, 0.98)",
+            background: "linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 255, 248, 0.95) 100%)",
             borderRadius: 6,
             p: { xs: 4, md: 8 },
             my: { xs: 6, md: 10 },
-            boxShadow: "0 12px 40px rgba(0,0,0,0.08)",
-            border: "1px solid rgba(76, 175, 80, 0.1)",
-            color: "#2E2E2E",
+            boxShadow: "0 20px 60px rgba(76, 175, 80, 0.15)",
+            border: "2px solid rgba(76, 175, 80, 0.1)",
             position: "relative",
             overflow: "hidden",
           }}
         >
+          {/* Elementos decorativos de fundo */}
+          <Box
+            sx={{
+              position: "absolute",
+              top: -100,
+              right: -100,
+              width: 300,
+              height: 300,
+              borderRadius: "50%",
+              background: "linear-gradient(135deg, rgba(76, 175, 80, 0.05), rgba(139, 195, 74, 0.03))",
+              zIndex: 0,
+            }}
+          />
+          <Box
+            sx={{
+              position: "absolute",
+              bottom: -150,
+              left: -150,
+              width: 400,
+              height: 400,
+              borderRadius: "50%",
+              background: "linear-gradient(135deg, rgba(46, 125, 50, 0.04), rgba(76, 175, 80, 0.02))",
+              zIndex: 0,
+            }}
+          />
+
           <Box sx={{ position: "relative", zIndex: 1 }}>
-            <Box sx={{ textAlign: "center", mb: 8 }}>
-              <EmojiEvents sx={{ fontSize: 80, color: "#4CAF50", mb: 3 }} />
+            {/* Header da Seção */}
+            <Box sx={{ textAlign: "center", mb: 10 }}>
+              <Box
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 2,
+                  mb: 4,
+                  background: "linear-gradient(135deg, #4CAF50, #2E7D32)",
+                  borderRadius: 50,
+                  px: 4,
+                  py: 2,
+                  color: "white",
+                  boxShadow: "0 8px 25px rgba(76, 175, 80, 0.3)",
+                }}
+              >
+                <AutoAwesome sx={{ fontSize: 32 }} />
+                <Typography variant="h6" sx={{ fontWeight: 700, fontSize: "1.2rem" }}>
+                  SISTEMA INOVADOR
+                </Typography>
+              </Box>
+
               <Typography
                 variant="h2"
                 sx={{
-                  fontSize: { xs: "2rem", md: "3rem" },
-                  fontWeight: 700,
+                  fontSize: { xs: "2.5rem", md: "3.5rem" },
+                  fontWeight: 800,
                   mb: 4,
                   fontFamily: "Inter, sans-serif",
-                  textShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                  background: "linear-gradient(135deg, #1B5E20, #4CAF50)",
+                  backgroundClip: "text",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  textShadow: "0 4px 8px rgba(0,0,0,0.1)",
                 }}
               >
-                Proposta Nova e Transformadora
+                Como Funciona o Projeto
               </Typography>
+
               <Typography
-                variant="h6"
+                variant="h5"
                 sx={{
-                  opacity: 0.95,
+                  color: "#2E7D32",
+                  maxWidth: "900px",
+                  mx: "auto",
+                  lineHeight: 1.7,
+                  fontSize: { xs: "1.2rem", md: "1.4rem" },
+                  fontWeight: 500,
+                  mb: 6,
+                }}
+              >
+                Um ecossistema completo que transforma coleta seletiva em educação ambiental para{" "}
+                <Box component="span" sx={{ color: "#4CAF50", fontWeight: 700 }}>
+                  30 escolas municipais
+                </Box>{" "}
+                de Goiânia
+              </Typography>
+
+              {/* Badges informativos */}
+              <Box sx={{ display: "flex", gap: 2, justifyContent: "center", flexWrap: "wrap", mb: 8 }}>
+                <Chip
+                  icon={<School />}
+                  label="30 Escolas Participantes"
+                  sx={{
+                    background: "linear-gradient(135deg, #4CAF50, #2E7D32)",
+                    color: "white",
+                    fontWeight: 600,
+                    fontSize: "1rem",
+                    px: 2,
+                    py: 3,
+                    "& .MuiChip-icon": { color: "white" },
+                  }}
+                />
+                <Chip
+                  icon={<Recycling />}
+                  label="4 Tipos de Materiais"
+                  sx={{
+                    background: "linear-gradient(135deg, #FF9800, #F57C00)",
+                    color: "white",
+                    fontWeight: 600,
+                    fontSize: "1rem",
+                    px: 2,
+                    py: 3,
+                    "& .MuiChip-icon": { color: "white" },
+                  }}
+                />
+                <Chip
+                  icon={<WorkspacePremium />}
+                  label="Sistema de Pontuação"
+                  sx={{
+                    background: "linear-gradient(135deg, #FFD700, #FFA000)",
+                    color: "white",
+                    fontWeight: 600,
+                    fontSize: "1rem",
+                    px: 2,
+                    py: 3,
+                    "& .MuiChip-icon": { color: "white" },
+                  }}
+                />
+              </Box>
+            </Box>
+
+            {/* Seção Principal: Como Funciona */}
+            <Box sx={{ mb: 10 }}>
+              <Typography
+                variant="h3"
+                sx={{
+                  fontWeight: 700,
+                  color: "#2E7D32",
+                  mb: 6,
+                  fontSize: { xs: "1.8rem", md: "2.5rem" },
+                  textAlign: "center",
+                }}
+              >
+                🎯  Sistema Engajante 
+              </Typography>
+
+              <Grid container spacing={6} sx={{ mb: 8 }}>
+                <Grid item xs={12} md={6}>
+                  <Box
+                    sx={{
+                      background: "white",
+                      borderRadius: 4,
+                      p: 5,
+                      height: "100%",
+                      boxShadow: "0 12px 40px rgba(76, 175, 80, 0.1)",
+                      border: "2px solid rgba(76, 175, 80, 0.1)",
+                      position: "relative",
+                      overflow: "hidden",
+                      "&:hover": {
+                        transform: "translateY(-5px)",
+                        boxShadow: "0 20px 60px rgba(76, 175, 80, 0.2)",
+                      },
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: -20,
+                        right: -20,
+                        width: 80,
+                        height: 80,
+                        borderRadius: "50%",
+                        background: "linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(139, 195, 74, 0.05))",
+                      }}
+                    />
+                    <Typography
+                      variant="h4"
+                      sx={{
+                        fontWeight: 700,
+                        color: "#1B5E20",
+                        mb: 3,
+                        fontSize: { xs: "1.5rem", md: "1.8rem" },
+                        position: "relative",
+                      }}
+                    >
+                      🏫 Participação das Escolas
+                    </Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        color: "#555",
+                        lineHeight: 1.8,
+                        fontSize: "1.1rem",
+                        position: "relative",
+                      }}
+                    >
+                      <strong>30 escolas municipais</strong> participam do projeto, cada uma recebendo{" "}
+                      <strong>4 bags especiais</strong> para coleta seletiva: uma para <strong>garrafas PET</strong>,
+                      uma para <strong>latas de alumínio</strong>, uma para <strong>eletrônicos</strong> e uma para{" "}
+                      <strong>papelão</strong>.
+                    </Typography>
+                  </Box>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <Box
+                    sx={{
+                      background: "white",
+                      borderRadius: 4,
+                      p: 5,
+                      height: "100%",
+                      boxShadow: "0 12px 40px rgba(255, 152, 0, 0.1)",
+                      border: "2px solid rgba(255, 152, 0, 0.1)",
+                      position: "relative",
+                      overflow: "hidden",
+                      "&:hover": {
+                        transform: "translateY(-5px)",
+                        boxShadow: "0 20px 60px rgba(255, 152, 0, 0.2)",
+                      },
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: -20,
+                        right: -20,
+                        width: 80,
+                        height: 80,
+                        borderRadius: "50%",
+                        background: "linear-gradient(135deg, rgba(255, 152, 0, 0.1), rgba(245, 124, 0, 0.05))",
+                      }}
+                    />
+                    <Typography
+                      variant="h4"
+                      sx={{
+                        fontWeight: 700,
+                        color: "#E65100",
+                        mb: 3,
+                        fontSize: { xs: "1.5rem", md: "1.8rem" },
+                        position: "relative",
+                      }}
+                    >
+                      🎯 Sistema de Pontuação
+                    </Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        color: "#555",
+                        lineHeight: 1.8,
+                        fontSize: "1.1rem",
+                        position: "relative",
+                      }}
+                    >
+                      Cada <strong>bag cheia</strong> equivale a <strong>1 ticket</strong>, que por sua vez vale{" "}
+                      <strong>1 ponto</strong> no ranking. A escola que acumular mais pontos concorre a prêmios
+                      incríveis como <strong>tablets</strong> e muito mais!
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+
+              {/* Fórmula Destacada - MELHORADA */}
+              <Box
+                sx={{
+                  background: "linear-gradient(135deg, #E8F5E9, #F1F8E9, #E0F2F1)",
+                  borderRadius: 6,
+                  p: 6,
+                  border: "3px solid rgba(76, 175, 80, 0.3)",
+                  mb: 8,
+                  maxWidth: "800px",
+                  mx: "auto",
+                  position: "relative",
+                  overflow: "hidden",
+                  boxShadow: "0 15px 50px rgba(76, 175, 80, 0.2)",
+                }}
+              >
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: -30,
+                    left: -30,
+                    width: 120,
+                    height: 120,
+                    borderRadius: "50%",
+                    background: "rgba(76, 175, 80, 0.1)",
+                  }}
+                />
+                <Box
+                  sx={{
+                    position: "absolute",
+                    bottom: -40,
+                    right: -40,
+                    width: 150,
+                    height: 150,
+                    borderRadius: "50%",
+                    background: "rgba(139, 195, 74, 0.08)",
+                  }}
+                />
+
+               
+
+                <Box sx={{ textAlign: "center", position: "relative" }}>
+                  <Typography
+                    variant="h2"
+                    sx={{
+                      fontWeight: 900,
+                      background: "linear-gradient(135deg, #1B5E20, #4CAF50)",
+                      backgroundClip: "text",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      fontFamily: "monospace",
+                      fontSize: { xs: "2rem", md: "3rem" },
+                      mb: 2,
+                      textShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                    }}
+                  >
+                    1 BAG = 1 TICKET = 1 PONTO
+                  </Typography>
+
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color: "#2E7D32",
+                      fontWeight: 600,
+                      opacity: 0.9,
+                    }}
+                  >
+                    Simplicidade que transforma educação em ação!
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+
+            {/* Cards dos Materiais - NOVA SEÇÃO */}
+            <Box sx={{ mb: 10 }}>
+              <Typography
+                variant="h3"
+                sx={{
+                  fontWeight: 700,
+                  color: "#2E7D32",
+                  mb: 6,
+                  fontSize: { xs: "1.8rem", md: "2.5rem" },
+                  textAlign: "center",
+                }}
+              >
+                🗂️ Os 4 Tipos de Materiais
+              </Typography>
+
+              <Grid container spacing={4} justifyContent="center">
+                {[
+                  {
+                    icon: <LocalDrink sx={{ fontSize: 48 }} />,
+                    title: "Garrafas PET",
+                    color: "#2196F3",
+                    description: "Garrafas plásticas de bebidas, água e refrigerantes",
+                    gradient: "linear-gradient(135deg, #2196F3, #1976D2)",
+                  },
+                  {
+                    icon: <Box sx={{ fontSize: 48, fontWeight: 900 }}>Al</Box>,
+                    title: "Latas de Alumínio",
+                    color: "#9E9E9E",
+                    description: "Latas de refrigerante, cerveja e outros produtos",
+                    gradient: "linear-gradient(135deg, #9E9E9E, #757575)",
+                  },
+                  {
+                    icon: <Battery20 sx={{ fontSize: 48 }} />,
+                    title: "Eletrônicos",
+                    color: "#FF5722",
+                    description: "Pilhas, baterias e pequenos equipamentos eletrônicos",
+                    gradient: "linear-gradient(135deg, #FF5722, #D84315)",
+                  },
+                  {
+                    icon: <Inventory sx={{ fontSize: 48 }} />,
+                    title: "Papelão",
+                    color: "#8D6E63",
+                    description: "Caixas de papelão, embalagens e materiais similares",
+                    gradient: "linear-gradient(135deg, #8D6E63, #6D4C41)",
+                  },
+                ].map((material, index) => (
+                  <Grid item xs={12} sm={6} md={3} key={index}>
+                    <Card
+                      sx={{
+                        height: "100%",
+                        borderRadius: 4,
+                        background: material.gradient,
+                        color: "white",
+                        boxShadow: `0 8px 25px ${material.color}30`,
+                        transition: "all 0.3s ease",
+                        "&:hover": {
+                          transform: "translateY(-10px) scale(1.02)",
+                          boxShadow: `0 15px 40px ${material.color}40`,
+                        },
+                        position: "relative",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          top: -20,
+                          right: -20,
+                          width: 80,
+                          height: 80,
+                          borderRadius: "50%",
+                          background: "rgba(255,255,255,0.1)",
+                        }}
+                      />
+                      <CardContent
+                        sx={{
+                          p: 4,
+                          textAlign: "center",
+                          position: "relative",
+                          height: "100%",
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <Box>
+                          <Box sx={{ mb: 3, color: "white" }}>{material.icon}</Box>
+                          <Typography
+                            variant="h5"
+                            sx={{
+                              fontWeight: 700,
+                              mb: 2,
+                              fontSize: "1.3rem",
+                            }}
+                          >
+                            {material.title}
+                          </Typography>
+                        </Box>
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            opacity: 0.9,
+                            lineHeight: 1.6,
+                            fontSize: "0.95rem",
+                          }}
+                        >
+                          {material.description}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+
+            {/* 3 Cards Principais Alinhados - MELHORADOS */}
+            <Box sx={{ mb: 10 }}>
+              <Typography
+                variant="h3"
+                sx={{
+                  fontWeight: 700,
+                  color: "#2E7D32",
+                  mb: 6,
+                  fontSize: { xs: "1.8rem", md: "2.5rem" },
+                  textAlign: "center",
+                }}
+              >
+                📈 Números que Impressionam
+              </Typography>
+
+              <Grid container spacing={6} justifyContent="center" alignItems="stretch">
+                <Grid item xs={12} md={4}>
+                  <Box
+                    sx={{
+                      textAlign: "center",
+                      background: "linear-gradient(135deg, #4CAF50, #2E7D32)",
+                      borderRadius: 6,
+                      p: 6,
+                      color: "white",
+                      height: "100%",
+                      boxShadow: "0 15px 50px rgba(76, 175, 80, 0.3)",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      position: "relative",
+                      overflow: "hidden",
+                      "&:hover": {
+                        transform: "translateY(-10px)",
+                        boxShadow: "0 25px 70px rgba(76, 175, 80, 0.4)",
+                      },
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: -30,
+                        right: -30,
+                        width: 120,
+                        height: 120,
+                        borderRadius: "50%",
+                        background: "rgba(255,255,255,0.1)",
+                      }}
+                    />
+                    <Typography variant="h1" sx={{ fontWeight: 900, mb: 2, fontSize: "4.5rem", position: "relative" }}>
+                      30
+                    </Typography>
+                    <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, position: "relative" }}>
+                      Escolas Participantes
+                    </Typography>
+                    <Typography variant="body1" sx={{ opacity: 0.9, position: "relative", fontSize: "1.1rem" }}>
+                      Rede municipal de Goiânia engajada na transformação ambiental histórica
+                    </Typography>
+                  </Box>
+                </Grid>
+
+                <Grid item xs={12} md={4}>
+                  <Box
+                    sx={{
+                      textAlign: "center",
+                      background: "linear-gradient(135deg, #FF9800, #F57C00)",
+                      borderRadius: 6,
+                      p: 6,
+                      color: "white",
+                      height: "100%",
+                      boxShadow: "0 15px 50px rgba(255, 152, 0, 0.3)",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      position: "relative",
+                      overflow: "hidden",
+                      "&:hover": {
+                        transform: "translateY(-10px)",
+                        boxShadow: "0 25px 70px rgba(255, 152, 0, 0.4)",
+                      },
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: -30,
+                        right: -30,
+                        width: 120,
+                        height: 120,
+                        borderRadius: "50%",
+                        background: "rgba(255,255,255,0.1)",
+                      }}
+                    />
+                    <Typography variant="h1" sx={{ fontWeight: 900, mb: 2, fontSize: "4.5rem", position: "relative" }}>
+                      4
+                    </Typography>
+                    <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, position: "relative" }}>
+                      Tipos de Materiais
+                    </Typography>
+                    <Typography variant="body1" sx={{ opacity: 0.9, position: "relative", fontSize: "1.1rem" }}>
+                      PET, Alumínio, Eletrônicos e Papelão separados conscientemente
+                    </Typography>
+                  </Box>
+                </Grid>
+
+                <Grid item xs={12} md={4}>
+                  <Box
+                    sx={{
+                      textAlign: "center",
+                      background: "linear-gradient(135deg, #FFD700, #FFA000)",
+                      borderRadius: 6,
+                      p: 6,
+                      color: "white",
+                      height: "100%",
+                      boxShadow: "0 15px 50px rgba(255, 193, 7, 0.3)",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      position: "relative",
+                      overflow: "hidden",
+                      "&:hover": {
+                        transform: "translateY(-10px)",
+                        boxShadow: "0 25px 70px rgba(255, 193, 7, 0.4)",
+                      },
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: -30,
+                        right: -30,
+                        width: 120,
+                        height: 120,
+                        borderRadius: "50%",
+                        background: "rgba(255,255,255,0.1)",
+                      }}
+                    />
+                    <Tablet sx={{ fontSize: 80, mb: 2, position: "relative" }} />
+                    <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, position: "relative" }}>
+                      Prêmios Incríveis
+                    </Typography>
+                    <Typography variant="body1" sx={{ opacity: 0.9, position: "relative", fontSize: "1.1rem" }}>
+                      Tablets e reconhecimento para as escolas mais engajadas
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+            </Box>
+
+            {/* Call to Action Final - MELHORADO */}
+            <Box
+              sx={{
+                textAlign: "center",
+                background: "linear-gradient(135deg, #4CAF50, #2E7D32, #1B5E20)",
+                borderRadius: 6,
+                p: 8,
+                color: "white",
+                position: "relative",
+                overflow: "hidden",
+                boxShadow: "0 20px 60px rgba(76, 175, 80, 0.3)",
+              }}
+            >
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: -50,
+                  left: -50,
+                  width: 200,
+                  height: 200,
+                  borderRadius: "50%",
+                  background: "rgba(255,255,255,0.1)",
+                }}
+              />
+              <Box
+                sx={{
+                  position: "absolute",
+                  bottom: -60,
+                  right: -60,
+                  width: 250,
+                  height: 250,
+                  borderRadius: "50%",
+                  background: "rgba(255,255,255,0.05)",
+                }}
+              />
+
+              <TrendingUpIcon sx={{ fontSize: 80, mb: 3, position: "relative" }} />
+
+              <Typography
+                variant="h3"
+                sx={{ fontWeight: 800, mb: 4, position: "relative", fontSize: { xs: "2rem", md: "2.5rem" } }}
+              >
+                🚀 Transformando Educação em Ação
+              </Typography>
+
+              <Typography
+                variant="h5"
+                sx={{
+                  mb: 6,
                   maxWidth: "800px",
                   mx: "auto",
                   lineHeight: 1.7,
-                  fontSize: "1.2rem",
+                  position: "relative",
+                  fontSize: { xs: "1.2rem", md: "1.4rem" },
                 }}
               >
-                Inédito em Goiânia, o projeto Eco Escolas adota práticas sustentáveis na busca da consciência ecológica,
-                com o uso racional dos recursos naturais.
+                Cada escola tem o potencial de conquistar até <strong>4 pontos por coleta</strong>. Juntas, as 30
+                escolas podem gerar {" "}
+                <Box component="span" sx={{ fontSize: "1.6rem", fontWeight: 900, color: "#A5D6A7" }}>
+                  120 pontos ou até mais de acordo com o engajamento
+                </Box>{" "}
+                o que impactará de forma grandiosa a educação ambiental da sociedade de Goiânia e o Estado!
               </Typography>
+
+              <Box
+                sx={{
+                  background: "rgba(255,255,255,0.15)",
+                  borderRadius: 4,
+                  p: 4,
+                  maxWidth: "600px",
+                  mx: "auto",
+                  position: "relative",
+                  backdropFilter: "blur(10px)",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                }}
+              >
+                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+                  💡 Impacto Esperado:
+                </Typography>
+                <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
+                  Esperamos que o envolvimento<strong>das escolas</strong>gere um impacto imensurável ,
+                  <strong> tanto no ambiente escolar </strong> mas também em toda sociedade Goiana!
+                </Typography>
+              </Box>
             </Box>
-            <Grid container spacing={8} justifyContent="center" alignItems="center">
-              <Grid item xs={12} md={4}>
-                <Box sx={{ textAlign: "center", py: 4 }}>
-                  <WorkspacePremium sx={{ fontSize: 80, color: "#FFD700", mb: 4 }} />
-                  <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, color: "#2E2E2E" }}>
-                    Prêmios Especiais
-                  </Typography>
-                  <Typography variant="h6" sx={{ lineHeight: 1.7, color: "#555", maxWidth: "300px", mx: "auto" }}>
-                    As escolas que mais se destacarem na coleta consciente e práticas sustentáveis receberão prêmios e
-                    reconhecimento oficial da cidade.
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Box sx={{ textAlign: "center", py: 4 }}>
-                  <Recycling sx={{ fontSize: 80, color: "#81C784", mb: 4 }} />
-                  <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, color: "#2E2E2E" }}>
-                    Coleta Consciente
-                  </Typography>
-                  <Typography variant="h6" sx={{ lineHeight: 1.7, color: "#555", maxWidth: "300px", mx: "auto" }}>
-                    Não é apenas sobre quantidade, mas sobre qualidade na separação, criatividade na reutilização e
-                    educação ambiental efetiva.
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Box sx={{ textAlign: "center", py: 4 }}>
-                  <Groups sx={{ fontSize: 80, color: "#A5D6A7", mb: 4 }} />
-                  <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, color: "#2E2E2E" }}>
-                    Impacto Coletivo
-                  </Typography>
-                  <Typography variant="h6" sx={{ lineHeight: 1.7, color: "#555", maxWidth: "300px", mx: "auto" }}>
-                    Cada escola contribui para um objetivo maior: fortalecer Goiânia como referência em educação
-                    ambiental escolar.
-                  </Typography>
-                </Box>
-              </Grid>
-            </Grid>
           </Box>
         </Paper>
-        {/* Origin Story Section */}
+
+        {/* Resto do código permanece igual... */}
+        {/* Pilot Project Section */}
         <Paper
           sx={{
             background: "rgba(255, 255, 255, 0.98)",
@@ -655,9 +1274,74 @@ export default function LandingPage() {
               fontFamily: "Inter, sans-serif",
             }}
           >
-            A Primeira Edição do EcoEscolas
+            🌱 O Início de Tudo
           </Typography>
-          <Grid container spacing={8} alignItems="center">
+
+          <Grid container spacing={8} alignItems="flex-start">
+            <Grid item xs={12} md={6}>
+              <Typography
+                variant="h4"
+                sx={{
+                  color: "#2E7D32",                         
+                  fontWeight: 600,
+                  mb: 4,
+                  fontSize: { xs: "1.5rem", md: "2rem" },
+                  textAlign: "center",
+                }}
+              >
+                 Projeto Piloto de Educação Ambiental - Agosto/2024
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: "#555",
+                  lineHeight: 1.8,
+                  fontSize: "1.1rem",
+                  mb: 4,
+                  textAlign: "justify",
+                }}
+              >
+                Em agosto de 2024, a <strong>Prefeitura Municipal de Goiânia</strong>, através da Secretaria de
+                Educação, em parceria estratégica com a <strong>Limpa Gyn</strong>, deu o primeiro passo para
+                revolucionar a educação ambiental nas escolas municipais. O projeto piloto foi implementado em uma
+                escola da região Noroeste de Goiânia, envolvendo alunos do 4º ao 7º ano do período matutino.
+              </Typography>
+              <Box
+                sx={{
+                  background: "linear-gradient(135deg, #E8F5E9, #F1F8E9)",
+                  borderRadius: 4,
+                  p: 4,
+                  border: "2px solid rgba(76, 175, 80, 0.2)",
+                  mb: 4,
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{
+                    color: "#2E7D32",
+                    fontWeight: 600,
+                    mb: 3,
+                    textAlign: "center",
+                  }}
+                >
+                  🎯 Objetivos do Projeto Piloto
+                </Typography>
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  <Typography variant="body1" sx={{ color: "#2E7D32", lineHeight: 1.6 }}>
+                    • <strong>Testar a metodologia</strong> de educação ambiental em ambiente escolar real
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: "#2E7D32", lineHeight: 1.6 }}>
+                    • <strong>Avaliar o engajamento</strong> dos alunos com práticas sustentáveis
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: "#2E7D32", lineHeight: 1.6 }}>
+                    • <strong>Estabelecer parcerias</strong> com cooperativas de reciclagem locais
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: "#2E7D32", lineHeight: 1.6 }}>
+                    • <strong>Medir o impacto social</strong> na comunidade escolar e familiar
+                  </Typography>
+                </Box>
+              </Box>
+            </Grid>
             <Grid item xs={12} md={6}>
               <Typography
                 variant="h4"
@@ -666,101 +1350,190 @@ export default function LandingPage() {
                   fontWeight: 600,
                   mb: 4,
                   fontSize: { xs: "1.5rem", md: "2rem" },
-                }}
-              >
-                A Primeira Vez
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  color: "#555",
-                  lineHeight: 1.8,
-                  fontSize: "1.1rem",
-                  mb: 3,
-                }}
-              >
-                Em 2025, a Prefeitura Municipal, através da Secretaria de Educação, decidiu inovar com o lançamento da
-                primeira edição do projeto EcoEscolas. A ideia: criar uma nova abordagem na educação ambiental,
-                transformando a sustentabilidade em uma experiência colaborativa e engajadora.
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  color: "#555",
-                  lineHeight: 1.8,
-                  fontSize: "1.1rem",
-                  mb: 3,
-                }}
-              >
-                A parceria com a Limpa Gyn trouxe a expertise técnica necessária para criar algo nunca visto antes: um
-                projeto de conscientização onde ganhar significa cuidar melhor do planeta. Esta é a primeira edição de
-                um projeto que promete fazer história.
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  color: "#555",
-                  lineHeight: 1.8,
-                  fontSize: "1.1rem",
-                  mb: 3,
-                }}
-              >
-                O conceito inovador reconhece que as crianças são os melhores embaixadores da mudança. Ao criar um
-                projeto de conscientização saudável entre escolas, estamos plantando as primeiras sementes de uma
-                transformação que se espalhará por toda a cidade.
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  color: "#555",
-                  lineHeight: 1.8,
-                  fontSize: "1.1rem",
-                  mb: 3,
-                }}
-              >
-                Esta primeira edição do EcoEscolas marca o início de uma nova fase na educação ambiental de Goiânia,
-                combinando aprendizado, diversão e responsabilidade social.
-              </Typography>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Box
-                sx={{
-                  background: "linear-gradient(135deg, #4CAF50, #2E7D32)",
-                  borderRadius: 4,
-                  p: 5,
-                  color: "white",
                   textAlign: "center",
-                  boxShadow: "0 12px 30px rgba(76, 175, 80, 0.3)",
-                  position: "relative",
-                  overflow: "hidden",
                 }}
               >
+                📚 Como Funcionou na Prática
+              </Typography>
+              <Box sx={{ mb: 4 }}>
                 <Box
                   sx={{
-                    position: "absolute",
-                    top: -20,
-                    right: -20,
-                    width: 100,
-                    height: 100,
-                    borderRadius: "50%",
-                    background: "rgba(255,255,255,0.1)",
+                    background: "white",
+                    borderRadius: 3,
+                    p: 3,
+                    mb: 3,
+                    border: "1px solid rgba(76, 175, 80, 0.2)",
+                    boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
                   }}
-                />
-                <Typography variant="h1" sx={{ fontWeight: 900, mb: 2, fontSize: "4rem", position: "relative" }}>
-                  2025
-                </Typography>
-                <Typography variant="h5" sx={{ mb: 3, fontWeight: 600, position: "relative" }}>
-                  Primeira Edição
-                </Typography>
-                <Divider sx={{ bgcolor: "rgba(255,255,255,0.3)", mb: 3 }} />
-                <Typography variant="body1" sx={{ lineHeight: 1.7, position: "relative" }}>
-                  O ano que marca o início de uma nova proposta na educação ambiental de Goiânia. Uma parceria que criou
-                  a primeira projeto de conscientização sustentável entre escolas municipais.
-                </Typography>
+                >
+                  <Typography variant="h6" sx={{ color: "#4CAF50", fontWeight: 600, mb: 2 }}>
+                    🎒 Engajamento dos Alunos
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: "#555", lineHeight: 1.7 }}>
+                    Cada estudante se tornou um <strong>"Agente Ambiental"</strong>, responsável por levar materiais
+                    recicláveis de casa (garrafas PET, latas de alumínio, papelão) e educar suas famílias sobre a
+                    importância da separação correta dos resíduos.
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    background: "white",
+                    borderRadius: 3,
+                    p: 3,
+                    mb: 3,
+                    border: "1px solid rgba(76, 175, 80, 0.2)",
+                    boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
+                  }}
+                >
+                  <Typography variant="h6" sx={{ color: "#4CAF50", fontWeight: 600, mb: 2 }}>
+                    📅 Coletas Programadas
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: "#555", lineHeight: 1.7, mb: 2 }}>
+                    <strong>1ª Coleta - 30/08/2024:</strong> Primeira experiência de coleta seletiva com grande
+                    participação dos alunos e famílias.
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: "#555", lineHeight: 1.7 }}>
+                    <strong>2ª Coleta - 11/09/2024:</strong> Consolidação do aprendizado com aumento significativo na
+                    qualidade da separação dos materiais.
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    background: "white",
+                    borderRadius: 3,
+                    p: 3,
+                    mb: 3,
+                    border: "1px solid rgba(76, 175, 80, 0.2)",
+                    boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
+                  }}
+                >
+                  <Typography variant="h6" sx={{ color: "#4CAF50", fontWeight: 600, mb: 2 }}>
+                    🏭 Impacto nas Cooperativas
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: "#555", lineHeight: 1.7 }}>
+                    Os materiais foram organizados em <strong>bags de até 1000kg</strong> e distribuídos para{" "}
+                    <strong>12 cooperativas de reciclagem</strong> cadastradas em Goiânia, gerando renda direta para
+                    dezenas de famílias trabalhadoras.
+                  </Typography>
+                </Box>
               </Box>
             </Grid>
           </Grid>
+
+          <Box sx={{ mt: 8 }}>
+            <Typography
+              variant="h4"
+              sx={{
+                textAlign: "center",
+                color: "#2E7D32",
+                fontWeight: 600,
+                mb: 6,
+                fontSize: { xs: "1.5rem", md: "2rem" },
+              }}
+            >
+              💬 Impacto Social Comprovado
+            </Typography>
+            <Grid container spacing={6}>
+              <Grid item xs={12}>
+                <Box
+                  sx={{
+                    background: "linear-gradient(135deg, #E8F5E9, #F1F8E9)",
+                    borderRadius: 4,
+                    p: 5,
+                    border: "2px solid rgba(76, 175, 80, 0.3)",
+                    position: "relative",
+                    overflow: "hidden",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: -10,
+                      right: -10,
+                      width: 60,
+                      height: 60,
+                      borderRadius: "50%",
+                      background: "rgba(76, 175, 80, 0.1)",
+                    }}
+                  />
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      color: "#2E7D32",
+                      fontStyle: "italic",
+                      fontWeight: 500,
+                      lineHeight: 1.7,
+                      fontSize: "1.3rem",
+                      position: "relative",
+                      mb: 3,
+                    }}
+                  >
+                    "As cooperativas vendem os materiais recicláveis, gerando renda para suas atividades e empregando
+                    muitas famílias que dependem desse trabalho para seu sustento. O projeto piloto mostrou que é
+                    possível unir educação, sustentabilidade e impacto social positivo."
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      color: "#4CAF50",
+                      fontWeight: 600,
+                      textAlign: "right",
+                      position: "relative",
+                    }}
+                  >
+                    — Coordenação do Projeto Piloto
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          </Box>
+
+          <Box
+            sx={{
+              mt: 8,
+              textAlign: "center",
+              background: "linear-gradient(135deg, #4CAF50, #2E7D32)",
+              borderRadius: 4,
+              p: 6,
+              color: "white",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            <Box
+              sx={{
+                position: "absolute",
+                top: -20,
+                left: -20,
+                width: 100,
+                height: 100,
+                borderRadius: "50%",
+                background: "rgba(255,255,255,0.1)",
+              }}
+            />
+            <Box
+              sx={{
+                position: "absolute",
+                bottom: -30,
+                right: -30,
+                width: 120,
+                height: 120,
+                borderRadius: "50%",
+                background: "rgba(255,255,255,0.05)",
+              }}
+            />
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: 4, position: "relative" }}>
+              🌟 O Legado do Projeto Piloto
+            </Typography>
+            <Typography variant="h6" sx={{ lineHeight: 1.7, position: "relative", maxWidth: "800px", mx: "auto" }}>
+              Este projeto piloto, desenvolvido pela <strong>Prefeitura de Goiânia</strong> em parceria com a{" "}
+              <strong>Limpa Gyn</strong>, não apenas validou nossa metodologia, mas também demonstrou que é possível
+              transformar a educação ambiental em uma ferramenta poderosa de mudança social. Os resultados obtidos em
+              agosto de 2024 são a base sólida sobre a qual construímos o atual Projeto Eco Escolas 2025.
+            </Typography>
+          </Box>
         </Paper>
+
         {/* Partnership Section */}
         <Paper
           sx={{
@@ -883,6 +1656,7 @@ export default function LandingPage() {
             </Typography>
           </Box>
         </Paper>
+
         {/* Objectives Section */}
         <Box sx={{ py: { xs: 6, md: 10 } }}>
           <Typography
@@ -1017,6 +1791,7 @@ export default function LandingPage() {
             </Grid>
           </Box>
         </Box>
+
         {/* Impact Vision Section */}
         <Paper
           sx={{
@@ -1147,10 +1922,11 @@ export default function LandingPage() {
             </Grid>
           </Grid>
         </Paper>
-        {/* Launch Event Section - NOVA SEÇÃO COM A NOVA IMAGEM */}
+
+        {/* Launch Event Section */}
         <Paper
           sx={{
-            background: "white", // Alterado para branco
+            background: "white",
             borderRadius: 6,
             p: { xs: 4, md: 8 },
             my: { xs: 6, md: 10 },
@@ -1173,7 +1949,7 @@ export default function LandingPage() {
           </Typography>
           <Box sx={{ mb: 6 }}>
             <Image
-              src="/banner.jpeg" // Restaurado para .jpeg
+              src="/banner.jpeg"
               alt="Banner do Evento de Lançamento"
               width={800}
               height={1000}
@@ -1195,6 +1971,7 @@ export default function LandingPage() {
             Goiânia!
           </Typography>
         </Paper>
+
         {/* CTA Section */}
         <Box
           id="progress-section"
@@ -1259,22 +2036,21 @@ export default function LandingPage() {
             >
               {isLoading ? "Carregando..." : "Acompanhar o Progresso da Eco Escolas"}
             </Button>
-            
           </Box>
         </Box>
       </Container>
-      {/* Compact Footer - SEM ESPAÇO EM BRANCO */}
+
+      {/* Compact Footer */}
       <Box
         sx={{
           background: "linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%)",
           color: "white",
           py: 6,
-          mt: 0, // Removido completamente o margin-top
+          mt: 0,
           position: "relative",
           overflow: "hidden",
         }}
       >
-        {/* Footer decorative elements */}
         <Box
           sx={{
             position: "absolute",
@@ -1301,7 +2077,6 @@ export default function LandingPage() {
         />
         <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
           <Grid container spacing={6}>
-            {/* Project Info */}
             <Grid item xs={12} md={4}>
               <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: "#A5D6A7" }}>
                 Projeto Eco Escolas
@@ -1325,7 +2100,6 @@ export default function LandingPage() {
                 </Typography>
               </Box>
             </Grid>
-            {/* Partners */}
             <Grid item xs={12} md={4}>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: "#A5D6A7" }}>
                 Realização
@@ -1367,7 +2141,6 @@ export default function LandingPage() {
                 </Box>
               </Box>
             </Grid>
-            {/* Contact */}
             <Grid item xs={12} md={4}>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: "#A5D6A7" }}>
                 Contato
