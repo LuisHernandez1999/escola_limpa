@@ -1024,7 +1024,7 @@ export default function LandingPage() {
                   textAlign: "center",
                 }}
               >
-                📈 Números que Impressionam
+                📈 O Projeto Em Números 
               </Typography>
 
               <Grid container spacing={6} justifyContent="center" alignItems="stretch">
