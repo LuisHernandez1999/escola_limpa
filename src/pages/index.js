@@ -609,7 +609,7 @@ export default function LandingPage() {
               >
                 <AutoAwesome sx={{ fontSize: 32 }} />
                 <Typography variant="h6" sx={{ fontWeight: 700, fontSize: "1.2rem" }}>
-                  SISTEMA INOVADOR
+                  SISTEMA GAMEFICADO
                 </Typography>
               </Box>
 
@@ -1107,13 +1107,13 @@ export default function LandingPage() {
                       }}
                     />
                     <Typography variant="h1" sx={{ fontWeight: 900, mb: 2, fontSize: "4.5rem", position: "relative" }}>
-                      4
+                      12
                     </Typography>
                     <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, position: "relative" }}>
-                      Tipos de Materiais
+                      Cooperativas
                     </Typography>
                     <Typography variant="body1" sx={{ opacity: 0.9, position: "relative", fontSize: "1.1rem" }}>
-                      PET, Alumínio, Eletrônicos e Papelão separados conscientemente
+                      O projeto irá englobar e promover a participação ativa das mesmas 
                     </Typography>
                   </Box>
                 </Grid>
@@ -1164,90 +1164,7 @@ export default function LandingPage() {
             </Box>
 
             {/* Call to Action Final - MELHORADO */}
-            <Box
-              sx={{
-                textAlign: "center",
-                background: "linear-gradient(135deg, #4CAF50, #2E7D32, #1B5E20)",
-                borderRadius: 6,
-                p: 8,
-                color: "white",
-                position: "relative",
-                overflow: "hidden",
-                boxShadow: "0 20px 60px rgba(76, 175, 80, 0.3)",
-              }}
-            >
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: -50,
-                  left: -50,
-                  width: 200,
-                  height: 200,
-                  borderRadius: "50%",
-                  background: "rgba(255,255,255,0.1)",
-                }}
-              />
-              <Box
-                sx={{
-                  position: "absolute",
-                  bottom: -60,
-                  right: -60,
-                  width: 250,
-                  height: 250,
-                  borderRadius: "50%",
-                  background: "rgba(255,255,255,0.05)",
-                }}
-              />
-
-              <TrendingUpIcon sx={{ fontSize: 80, mb: 3, position: "relative" }} />
-
-              <Typography
-                variant="h3"
-                sx={{ fontWeight: 800, mb: 4, position: "relative", fontSize: { xs: "2rem", md: "2.5rem" } }}
-              >
-                🚀 Transformando Educação em Ação
-              </Typography>
-
-              <Typography
-                variant="h5"
-                sx={{
-                  mb: 6,
-                  maxWidth: "800px",
-                  mx: "auto",
-                  lineHeight: 1.7,
-                  position: "relative",
-                  fontSize: { xs: "1.2rem", md: "1.4rem" },
-                }}
-              >
-                Cada escola tem o potencial de conquistar até <strong>4 pontos por coleta</strong>. Juntas, as 30
-                escolas podem gerar {" "}
-                <Box component="span" sx={{ fontSize: "1.6rem", fontWeight: 900, color: "#A5D6A7" }}>
-                  120 pontos ou até mais de acordo com o engajamento
-                </Box>{" "}
-                o que impactará de forma grandiosa a educação ambiental da sociedade de Goiânia e o Estado!
-              </Typography>
-
-              <Box
-                sx={{
-                  background: "rgba(255,255,255,0.15)",
-                  borderRadius: 4,
-                  p: 4,
-                  maxWidth: "600px",
-                  mx: "auto",
-                  position: "relative",
-                  backdropFilter: "blur(10px)",
-                  border: "1px solid rgba(255,255,255,0.2)",
-                }}
-              >
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-                  💡 Impacto Esperado:
-                </Typography>
-                <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-                  Esperamos que o envolvimento<strong>das escolas</strong>gere um impacto imensurável ,
-                  <strong> tanto no ambiente escolar </strong> mas também em toda sociedade Goiana!
-                </Typography>
-              </Box>
-            </Box>
+            
           </Box>
         </Paper>
 
@@ -1301,10 +1218,7 @@ export default function LandingPage() {
                   textAlign: "justify",
                 }}
               >
-                Em agosto de 2024, a <strong>Prefeitura Municipal de Goiânia</strong>, através da Secretaria de
-                Educação, em parceria estratégica com a <strong>Limpa Gyn</strong>, deu o primeiro passo para
-                revolucionar a educação ambiental nas escolas municipais. O projeto piloto foi implementado em uma
-                escola da região Noroeste de Goiânia, envolvendo alunos do 4º ao 7º ano do período matutino.
+                Em agosto de 2024, o <strong>Consórcio Limpa Gyn</strong> protagonizou uma iniciativa pioneira que marcou um novo capítulo na promoção da educação ambiental em Goiânia. Com olhar visionário e compromisso com a sustentabilidade, o consórcio idealizou e implementou um projeto piloto inovador, destinado a despertar a consciência ecológica entre os jovens. A ação teve início em uma escola da região Noroeste da cidade, alcançando estudantes do 4º ao 7º ano do período matutino, e transformando a sala de aula em um espaço vivo de reflexão e ação pelo meio ambiente.
               </Typography>
               <Box
                 sx={{
@@ -1526,10 +1440,9 @@ export default function LandingPage() {
               🌟 O Legado do Projeto Piloto
             </Typography>
             <Typography variant="h6" sx={{ lineHeight: 1.7, position: "relative", maxWidth: "800px", mx: "auto" }}>
-              Este projeto piloto, desenvolvido pela <strong>Prefeitura de Goiânia</strong> em parceria com a{" "}
-              <strong>Limpa Gyn</strong>, não apenas validou nossa metodologia, mas também demonstrou que é possível
-              transformar a educação ambiental em uma ferramenta poderosa de mudança social. Os resultados obtidos em
-              agosto de 2024 são a base sólida sobre a qual construímos o atual Projeto Eco Escolas 2025.
+              Este projeto piloto, idealizado e executado com excelência pelo <strong>Consórcio Limpa Gyn</strong>, não apenas validou uma metodologia inovadora, como também revelou o imenso potencial da educação ambiental como agente de transformação social. Os resultados alcançados em agosto de 2024 se tornaram a base sólida e inspiradora para a consolidação do atual <strong>Projeto Eco Escolas 2025</strong>, que surge com ainda mais força, propósito e impacto.
+
+
             </Typography>
           </Box>
         </Paper>
@@ -1616,7 +1529,7 @@ export default function LandingPage() {
                   style={{ objectFit: "contain", margin: "0 auto" }}
                 />
                 <Typography variant="h4" sx={{ mt: 3, fontWeight: 700, color: "#2E7D32" }}>
-                  Limpa Gyn
+                  Consórcio Limpa Gyn
                 </Typography>
                 <Typography variant="h6" sx={{ mt: 1, color: "#666", fontWeight: 500 }}>
                   Parceira Técnica Especializada
@@ -2132,7 +2045,7 @@ export default function LandingPage() {
                   />
                   <Box>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      Limpa Gyn
+                     Consórcio Limpa Gyn
                     </Typography>
                     <Typography variant="body2" sx={{ opacity: 0.8, fontSize: "0.85rem" }}>
                       Parceira Técnica Especializada
@@ -2169,7 +2082,7 @@ export default function LandingPage() {
           >
             &copy; {new Date().getFullYear()} Projeto Eco Escolas Goiânia - Todos os direitos reservados
             <br />A primeira projeto de conscientização ambiental escolar de Goiânia - Uma iniciativa nova da Secretaria
-            Municipal de Educação em parceria com a Limpa Gyn
+            Municipal de Educação em parceria com o Consórcio Limpa Gyn 
           </Typography>
         </Container>
       </Box>
