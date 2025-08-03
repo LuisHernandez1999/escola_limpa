@@ -1017,7 +1017,7 @@ export default function SchoolProgress() {
               textAlign: "center",
             }}
           >
-            Parceria Limpa Gyn e Prefeitura de Goiânia
+            Parceria Consórcio Limpa Gyn e Prefeitura de Goiânia
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2, justifyContent: "center" }}>
             <Image src="/logolimpa.png" alt="Logo Limpa Gyn" width={50} height={50} style={{ objectFit: "contain" }} />

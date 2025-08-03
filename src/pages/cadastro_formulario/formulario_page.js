@@ -1053,7 +1053,7 @@ export default function ColetaForm() {
                 textAlign: "center",
               }}
             >
-              Parceria Limpa Gyn e Prefeitura de Goiânia
+              Parceria Consórcio Limpa Gyn e Prefeitura de Goiânia
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 2, justifyContent: "center" }}>
               <Image
