@@ -518,36 +518,6 @@ export default function LandingPage() {
             transition: "all 0.8s ease-out",
           }}
         >
-          <Typography
-            variant="h1"
-            sx={{
-              fontSize: { xs: "2.5rem", md: "4rem", lg: "4.5rem" },
-              fontWeight: 800,
-              color: "#1B5E20",
-              mb: 4,
-              fontFamily: "Inter, sans-serif",
-              letterSpacing: "-0.03em",
-              lineHeight: 1.1,
-            }}
-          >
-            O QUE É?
-          </Typography>
-          <Typography
-            variant="h5"
-            sx={{
-              color: "#424242",
-              mb: 8,
-              maxWidth: "900px",
-              mx: "auto",
-              fontWeight: 400,
-              lineHeight: 1.6,
-              fontSize: { xs: "1.1rem", md: "1.3rem" },
-            }}
-          >
-            Projeto que transforma o ato de praticar a coleta seletiva em educação ambiental, para alunos de 30 escolas
-            municipais de Goiânia. Uma ação inovadora que traz nova abordagem à coleta seletiva, promovendo a
-            conscientização, a transformação de atitudes e o despertar do senso de responsabilidade social e ambiental.
-          </Typography>
 
           {/* Animated Logo */}
           <Box
@@ -794,7 +764,7 @@ export default function LandingPage() {
                       mb: 4,
                     }}
                   >
-                    Nossas crianças são o futuro do planeta. O projeto Eco Escolas as capacita a serem agentes de
+                    Nossas crianças são o futuro do planeta. O projeto as capacita a serem agentes de
                     mudança, ensinando a importância da reciclagem e do cuidado com o meio ambiente.
                   </Typography>
                   <Typography
@@ -1503,9 +1473,7 @@ export default function LandingPage() {
                 Impacto Previsto
               </Typography>
               <Typography variant="h6" sx={{ lineHeight: 1.7, position: "relative", maxWidth: "800px", mx: "auto" }}>
-                <strong>Mudança comportamental</strong> no tratamento do lixo reciclado.{" "}
-                <strong>Natureza preservada</strong>, futuro mais seguro.{" "}
-                <strong>Goiânia dá um salto na educação ambiental</strong>.
+               Promover a educação e a conscientização ambiental em Goiânia, por meio do ensino da coleta seletiva às crianças, incentivando hábitos sustentáveis que elas possam levar para o futuro.
               </Typography>
             </Box>
           </Box>
@@ -2389,7 +2357,7 @@ export default function LandingPage() {
                       fontSize: { xs: "1.8rem", md: "2.2rem" },
                     }}
                   >
-                     Um Marco Histórico para Goiânia
+                     
                   </Typography>
                   <Typography
                     variant="body1"
