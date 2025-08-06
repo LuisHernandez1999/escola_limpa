@@ -2261,19 +2261,6 @@ export default function LandingPage() {
               >
                 Evento de Lançamento
               </Typography>
-              <Typography
-                variant="h6"
-                sx={{
-                  color: "#666",
-                  maxWidth: "800px",
-                  mx: "auto",
-                  lineHeight: 1.7,
-                  fontSize: "1.2rem",
-                  mb: 6,
-                }}
-              >
-                O marco histórico que dará início à primeira iniciativa de educação ambiental escolar de Goiânia
-              </Typography>
             </Box>
 
             {/* Centralized Image */}
@@ -2359,20 +2346,6 @@ export default function LandingPage() {
                   >
                      
                   </Typography>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      color: "#555",
-                      lineHeight: 1.8,
-                      fontSize: "1.2rem",
-                      mb: 6,
-                    }}
-                  >
-                    Este evento marca o início de uma nova era na educação ambiental de Goiânia. Será o momento em que
-                    oficialmente daremos início ao primeiro projeto de coleta seletiva educativa nas escolas municipais
-                    da nossa cidade, criando um legado que transformará gerações.
-                  </Typography>
-
                   <Grid container spacing={4} sx={{ mb: 6 }}>
                     <Grid item xs={12} sm={6} md={3}>
                       <Box
@@ -2446,55 +2419,6 @@ export default function LandingPage() {
                     <Grid item xs={12} sm={6} md={3}>
                     </Grid>
                   </Grid>
-
-                  <Box
-                    sx={{
-                      background: "linear-gradient(135deg, #E8F5E9, #F1F8E9)",
-                      borderRadius: 4,
-                      p: 6,
-                      border: "2px solid rgba(76, 175, 80, 0.2)",
-                      position: "relative",
-                      overflow: "hidden",
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: -10,
-                        left: -10,
-                        width: 60,
-                        height: 60,
-                        borderRadius: "50%",
-                        background: "rgba(76, 175, 80, 0.1)",
-                      }}
-                    />
-                    <Typography
-                      variant="h4"
-                      sx={{
-                        color: "#1B5E20",
-                        fontWeight: 700,
-                        mb: 3,
-                        textAlign: "center",
-                        position: "relative",
-                      }}
-                    >
-                       Faça Parte da História
-                    </Typography>
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        color: "#2E7D32",
-                        lineHeight: 1.7,
-                        textAlign: "center",
-                        fontWeight: 500,
-                        position: "relative",
-                      }}
-                    >
-                      Participe do lançamento oficial do Projeto Eco Escolas e seja testemunha do início desta
-                      transformação ambiental que marcará para sempre a educação em Goiânia! Juntos, construiremos um
-                      futuro mais sustentável para nossas crianças.
-                    </Typography>
-                  </Box>
                 </Box>
               </Grid>
             </Grid>
